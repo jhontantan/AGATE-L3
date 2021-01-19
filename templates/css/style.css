@@ -1,0 +1,8 @@
+#logo {
+    float: left;
+}
+
+#main-title {
+    float: right;
+    text-color: red;
+}
