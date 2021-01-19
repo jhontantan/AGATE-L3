@@ -81,6 +81,4 @@ htmlcov/
 dist/
 build/
 *.egg-info/
-
 /venv/
-.idea/
