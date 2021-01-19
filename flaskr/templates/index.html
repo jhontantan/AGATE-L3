@@ -1,18 +1,9 @@
 {% extends 'base.html' %}
 
-{% block header %}
-<p class="logo">
- <img height="150" src="{{url_for('static', filename='logo_Agate.jpg')}}" width="150"/>
-</p>
-
-<h1>Gestion et traitement de données géographiques</h1>
-
-
-{% endblock %}
-
 {% block content %}
-<button name="b_import" type="button">Import</button>
-<button name="Export" value="">Export</button>
-<button name=" + " value=""> + </button>
-
+<div class="buttons">
+  <button name="b_import" type="button" class="btn btn-secondary">Import</button>
+  <button name="Export" value="" class="btn btn-secondary">Export</button>
+  <button name=" + " value="" class="btn btn-secondary"> + </button>
+</div>
 {% endblock %}
