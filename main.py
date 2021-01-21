@@ -1,16 +1,22 @@
 from flask import Flask, render_template
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:root@127.0.0.1:5432/v_passage"
+# Attention le mdp la c'est "user" mais chez vous c'est "root"  V
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:user@127.0.0.1:5432/v_passage"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
 
 
 class v_passage(db.Model):
+    __tablename__ = 'v_passage'
+
     id = db.Column(db.Integer, primary_key=True)
 
     com14 = db.Column(db.Integer, nullable=False)
@@ -56,8 +62,13 @@ class v_passage(db.Model):
     surface = db.Column(db.Float(10), nullable=False)
 
     def __repr__(self):
-        return '<g_alp %r>' % self.id
+        return '<v_passage %r>' % self.id
 
+    # def __init__(self, name, model, doors):
+    #     self.name = name
+    #     self.model = model
+    #     self.doors = doors
+    #
 
 @app.route('/')
 def hello_world():
