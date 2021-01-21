@@ -14,33 +14,17 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
   </head>
 
-
   <body>
     <header>
-<!--      <img src="{{url_for('static', filename='logo_Agate.jpg')}}" class="pull-left" height="150" width="150" id="logo" alt="logo Agate">-->
-<!--      <h1 id="main-title" class="text-center">Gestion et traitement de données géographiques</h1>-->
-
-<!--      <h1>-->
-<!--        <a class="pull-left" href="#">-->
-<!--          <img src="{{url_for('static', filename='logo_Agate.jpg')}}" width="10%" height="10%" alt="">-->
-<!--        </a>-->
-<!--        <span class="text-center" style="margin-left: -20%;">Gestion et traitement de données géographiques</span>-->
-<!--      </h1>-->
-
-      <div class="panel-heading">
-        <div class="container-fluid">
-          <a href="#" class="pull-left">
-            <img src="{{url_for('static', filename='logo_Agate.jpg')}}" width="10%" height="10%" alt="">
-          </a>
-          <h1 align="center">Gestion et traitement de données géographiques</h1>
+        <div class="row">
+            <div class="col-2">
+                <img src="{{url_for('static', filename='logo_Agate.jpg')}}"  width="200" height="200" class="loat-left" alt="">
+            </div>
+            <div class="col-9 align-self-center">
+                <h1>Gestion et traitement de données géographiques</h1>
+            </div>
         </div>
-      </div>
-
-
-
     </header>
-
-
 
     {% block content %}{% endblock %}
 
