@@ -6,12 +6,11 @@ from flask_sqlalchemy import SQLAlchemy
 # pip install -r requirements.txt
 
 app = Flask(__name__)
-# Attention le mdp la c'est "user" mais chez vous c'est "root"  V
+# Attention le mdp la celui de votre BDD                        V
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:user@127.0.0.1:5432/v_passage"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
 
 
 class v_passage(db.Model):
@@ -73,3 +72,7 @@ class v_passage(db.Model):
 @app.route('/')
 def hello_world():
     return render_template('index.html')
+
+@app.route('/base')
+def test():
+    return render_template('base.html')
