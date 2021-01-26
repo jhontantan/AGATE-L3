@@ -1,19 +1,95 @@
+/*-------- GENERAL --------*/
+body {
+    font-family: Helvetica, Arial, sans-serif !important;
+    color : #212529;
+}
+
+/*-------- HEADER --------*/
 #logo {
+    margin-top: 15%;
+    margin-bottom: 15%;
+    width: 100%;
+    height: auto;
 }
 
-#main-title {
-    font-family: Helvetica;
-    font-weight: Bold;
+h1 {
+    text-transform: uppercase !important;
+    font-size: 1.8rem !important;
 }
 
+header {
+    padding-left: 7%;
+    padding-right: 7%;
+    border-bottom: 2px solid #313E4735;
+}
+
+/*-------- MAIN CONTENT --------*/
+#main-bloc {
+    padding-top : 1.5%;
+    padding-bottom : 6%;
+}
+
+.col-space {
+    padding-right: 1.5%;
+}
+
+#sheet-area {
+    padding-left: 7%;
+    padding-right: 7%;
+    padding-bottom: 25%;
+    background-color: #313E47
+}
+
+/*-------- BUTTONS --------*/
+.btn-toolbar {
+    padding-left: 7%;
+    padding-right: 7%;
+    padding-bottom : 1.5%;
+}
+
+button {
+    background-color: #313E47 !important;
+    text-transform: uppercase;
+    border: none !important;
+    width: 100%;
+    height: auto;
+    vertical-align: top;
+    /*box-shadow: 0px 5px #151D21;*/
+}
+
+button:hover {
+    background-color: #577B94 !important;
+}
+
+/*-------- FOOTER --------*/
+footer {
+    padding-left: 7%;
+    padding-right: 7%;
+    padding-bottom : 3%;
+    border-top: 2px solid #313E4735;
+}
+
+footer div {
+    padding-top : 1%;
+    font-size: 0.75rem;
+}
+
+footer div a {
+    color : #212529;
+    text-decoration : none;
+}
+
+footer div a:hover {
+    color : #577B94;
+}
+/*
 .mt-0 {
-  margin-top: 0 !important;
+    margin-top: 0 !important;
 }
 
 .row {
     margin-right: 0px;
 }
-
 
 .square {
   margin-top: 50px;
@@ -21,4 +97,4 @@
   height: 480px;
   width: 1300px;
   background-color: #555;
-}
+}*/

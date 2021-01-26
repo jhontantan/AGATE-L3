@@ -17,8 +17,8 @@
   <body>
     <header>
         <div class="row">
-            <div class="col-2">
-                <img src="{{url_for('static', filename='logo_Agate.jpg')}}"  width="200" height="200" class="loat-left" alt="">
+            <div class="col-1">
+                <img src="{{url_for('static', filename='logo_Agate.jpg')}}"  width="200" height="200" id="logo" class="loat-left" alt="">
             </div>
             <div class="col-9 align-self-center">
                 <h1>Gestion et traitement de données géographiques</h1>
@@ -28,6 +28,8 @@
 
     {% block content %}{% endblock %}
 
-    <footer></footer>
+    <footer>
+        <div>© 2021 Agate Territoires | <a href="https://agate-territoires.fr/">Site officiel</a></div>
+    </footer>
   </body>
 </html>
