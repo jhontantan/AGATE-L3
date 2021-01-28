@@ -70,16 +70,14 @@ def index():
 def test():
     return render_template('base.html')
 
-@app.route('/importation')
-def importation():
-    return render_template('importation.html')
+
 
 @app.route('/404')
 def page_not_found():
     return render_template('404.html')
 
 # IMPORT
-@app.route('/importation', methods=['POST'])
+@app.route('/', methods=['POST'])
 def upload_file():
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
@@ -89,5 +87,4 @@ def upload_file():
             return redirect(url_for('page_not_found'))
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
     return redirect(url_for('index'))
- #flash('Document uploaded successfully.')
- #'file uploaded successfully'
+
