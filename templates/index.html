@@ -16,15 +16,27 @@
 <div id="main-bloc">
     <div class="btn-toolbar" role="toolbar" aria-label="Utilitary buttons">
         <div class="col-1">
-            <a href=importation target="_blank" ><button name="b_import" type="button" value="" class="btn btn-secondary">Import</button></a>
+            <button class="btn btn-primary" type="button" onclick="myFunction()" >Import</button>
         </div>
         <div class="col-space"></div>
         <div class="col-1">
-            <button name="b_export" type="button" value="" class="btn btn-secondary">Export</button>
+            <button name="b_export" type="button"  class="btn btn-primary">Export</button>
         </div>
+    </div>
+    <div id="hideImport" class="hidden" >
+            <div>
+                <h1>File Upload</h1>
+            </div>
+            <form method="POST" action="" enctype="multipart/form-data">
+                <p><input type="file" name="file"></p>
+                <p><input type="submit" value="Submit"></p>
+            </form>
     </div>
     <div id="sheet-area">
         <!-- A COMPLETER -->
     </div>
 </div>
+
+
 {% endblock %}
+

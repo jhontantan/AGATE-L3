@@ -88,6 +88,6 @@ def upload_file():
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
             return redirect(url_for('page_not_found'))
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-    return redirect(url_for('importation'))
+    return redirect(url_for('index'))
  #flash('Document uploaded successfully.')
  #'file uploaded successfully'

@@ -82,6 +82,12 @@ footer div a {
 footer div a:hover {
     color : #577B94;
 }
+
+/*-------- Scripts Hidden--------*/
+.hidden {
+     display:none;
+}
+
 /*
 .mt-0 {
     margin-top: 0 !important;
@@ -91,10 +97,4 @@ footer div a:hover {
     margin-right: 0px;
 }
 
-.square {
-  margin-top: 50px;
-  margin-left: 100px;
-  height: 480px;
-  width: 1300px;
-  background-color: #555;
 }*/

@@ -85,4 +85,9 @@ build/
 
 .idea/
 
-temp/
+
+# exclude everything in temp
+temp/*
+
+# exception to the rule temp
+!temp/.gitkeep
