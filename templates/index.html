@@ -25,12 +25,14 @@
     </div>
     <div id="hideImport" class="hidden" >
             <div>
-                <h1>File Upload</h1>
+                <label for="formFileMultiple" class="form-label">Choisissez le ficher à importer</label>
             </div>
-            <form method="POST" action="" enctype="multipart/form-data">
-                <p><input type="file" name="file"></p>
-                <p><input type="submit" value="Submit"></p>
-            </form>
+             <div class="input-group" id="inputDiv">
+                <form method="POST" action="" enctype="multipart/form-data">
+                        <p><input type="file" class="form-control form-control-sm" name="file" id="inputImportFile" ></p>
+                        <p><input type="submit" value="Importer" class="input-group-text" id="inputImportSubmit"  aria-describedby="inputImportSubmit" aria-label="Upload"></p>
+                </form>
+             </div>
     </div>
     <div id="sheet-area">
         <!-- A COMPLETER -->

@@ -83,6 +83,13 @@ footer div a:hover {
     color : #577B94;
 }
 
+/*-------- INPUT --------*/
+
+input[type=submit]{
+    font-family: Helvetica, Arial, sans-serif !important;
+
+}
+
 /*-------- Scripts Hidden--------*/
 .hidden {
      display:none;

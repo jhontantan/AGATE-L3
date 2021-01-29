@@ -17,7 +17,8 @@ migrate = Migrate(app, db)
 app.config['UPLOAD_EXTENSIONS'] = ['.csv']
 app.config['UPLOAD_PATH'] = 'temp'
 # app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
-app.config['SECRET_KEY'] = '325245hkhf486axcv5719bf9397cbn70xv'
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
+
 
 
 
@@ -64,17 +65,16 @@ class v_passage(db.Model):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', title='Outil Agate')
 
 @app.route('/base')
 def test():
     return render_template('base.html')
 
-
-
 @app.route('/404')
 def page_not_found():
     return render_template('404.html')
+
 
 # IMPORT
 @app.route('/', methods=['POST'])
@@ -84,7 +84,9 @@ def upload_file():
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
-            return redirect(url_for('page_not_found'))
+            flash('error ', 'danger')
+            return redirect(url_for('index'))
+        flash('Le chargement a été réalisé avec succès ', 'success')
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
     return redirect(url_for('index'))
 

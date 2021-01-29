@@ -6,3 +6,16 @@
                 x.style.display = "none";
             }
         }
+  (function () {
+
+        var $alertMsg = $("#alertMsg");
+
+        function configListeners() {
+
+
+        $alertMsg.on("close.bs.alert", function () {
+            $alertMsg.hide();
+            return false;
+        });
+    }
+    })();
