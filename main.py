@@ -4,6 +4,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask import flash
 
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
@@ -19,7 +20,8 @@ migrate = Migrate(app, db)
 app.config['UPLOAD_EXTENSIONS'] = ['.csv']
 app.config['UPLOAD_PATH'] = 'temp'
 # app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
-app.config['SECRET_KEY'] = '325245hkhf486axcv5719bf9397cbn70xv'
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
+
 
 
 class v_passage(db.Model):
@@ -66,18 +68,16 @@ class v_passage(db.Model):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', title='Outil Agate')
 
 
 @app.route('/base')
 def test():
     return render_template('base.html')
 
-
 @app.route('/importation')
 def importation():
     return render_template('importation.html')
-
 
 @app.route('/404')
 def page_not_found():
@@ -85,16 +85,18 @@ def page_not_found():
 
 
 # IMPORT
-@app.route('/importation', methods=['POST'])
+@app.route('/', methods=['POST'])
 def upload_file():
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
-            return redirect(url_for('page_not_found'))
+            flash('error ', 'danger')
+            return redirect(url_for('index'))
+        flash('Le chargement a été réalisé avec succès ', 'success')
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-    return redirect(url_for('importation'))
+    return redirect(url_for('index'))
 
 
 # flash('Document uploaded successfully.')

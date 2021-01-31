@@ -1,35 +1,54 @@
 <!doctype html>
 <html lang="fr">
 
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <title>Outil Agate</title>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  </head>
+        <title>Outil Agate</title>
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    </head>
 
-  <body>
-    <header>
-        <div class="row">
-            <div class="col-1">
-                <img src="{{url_for('static', filename='logo_Agate.jpg')}}"  width="200" height="200" id="logo" class="loat-left" alt="">
+    <body>
+        <header>
+            <div class="row">
+                <div class="col-1">
+                    <img src="{{url_for('static', filename='logo_Agate.jpg')}}" width="200" height="200" id="logo"
+                         class="loat-left" alt="">
+                </div>
+                <div class="col-9 align-self-center">
+                    <h1>Gestion et traitement de données géographiques</h1>
+                </div>
+
             </div>
-            <div class="col-9 align-self-center">
-                <h1>Gestion et traitement de données géographiques</h1>
+        </header>
+        <!-- Message Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <ul class=flashes>
+            {% for category, message in messages %}
+            <div class="alert alert-{{category}} alert-dismissible fade show" id="alert-ok" role="alert">
+                {{message}}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-    </header>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
 
-    {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
 
-    <footer>
-        <div>© 2021 Agate Territoires | <a href="https://agate-territoires.fr/">Site officiel</a></div>
-    </footer>
-  </body>
+        <footer>
+            <!-- JS -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+            <script src="/static/script.js"></script>
+
+            <div>© 2021 Agate Territoires | <a href="https://agate-territoires.fr/">Site officiel</a></div>
+        </footer>
+    </body>
 </html>
