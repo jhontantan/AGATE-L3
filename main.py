@@ -1,5 +1,7 @@
+import csv
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+
+from flask import Flask, render_template, request, redirect, url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
@@ -18,7 +20,6 @@ app.config['UPLOAD_EXTENSIONS'] = ['.csv']
 app.config['UPLOAD_PATH'] = 'temp'
 # app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
 app.config['SECRET_KEY'] = '325245hkhf486axcv5719bf9397cbn70xv'
-
 
 
 class v_passage(db.Model):
@@ -50,6 +51,7 @@ class v_passage(db.Model):
     libcco19 = db.Column(db.String(150), nullable=True)
     cco20 = db.Column(db.String(9), nullable=True)
     libcco20 = db.Column(db.String(150), nullable=True)
+
     def __repr__(self):
         return '<v_passage %r>' % self.id
 
@@ -66,17 +68,21 @@ class v_passage(db.Model):
 def index():
     return render_template('index.html')
 
+
 @app.route('/base')
 def test():
     return render_template('base.html')
+
 
 @app.route('/importation')
 def importation():
     return render_template('importation.html')
 
+
 @app.route('/404')
 def page_not_found():
     return render_template('404.html')
+
 
 # IMPORT
 @app.route('/importation', methods=['POST'])
@@ -89,5 +95,39 @@ def upload_file():
             return redirect(url_for('page_not_found'))
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
     return redirect(url_for('importation'))
- #flash('Document uploaded successfully.')
- #'file uploaded successfully'
+
+
+# flash('Document uploaded successfully.')
+# 'file uploaded successfully'
+
+
+# EXPORT
+
+from flask import send_file
+
+from io import StringIO
+from io import BytesIO
+import datetime
+
+@app.route('/export', methods=['GET'])
+def download_file():
+    filename = 'Export_Agate.csv'
+    row = ['hello', 'world']
+    proxy = StringIO()
+
+    writer = csv.writer(proxy)
+    writer.writerow(row)
+
+    # Creating the byteIO object from the StringIO Object
+    mem = BytesIO()
+    mem.write(proxy.getvalue().encode())
+    # seeking was necessary. Python 3.5.2, Flask 0.12.2
+    mem.seek(0)
+    proxy.close()
+
+    return send_file(
+        mem,
+        as_attachment=True,
+        attachment_filename=filename,
+        mimetype='text/csv'
+    )
