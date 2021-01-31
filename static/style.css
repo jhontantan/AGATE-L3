@@ -34,10 +34,12 @@ header {
 }
 
 #sheet-area {
-    padding-left: 7%;
-    padding-right: 7%;
-    padding-bottom: 25%;
-    background-color: #313E47
+    padding: 0.2% 7%;
+    background-color: #313E47;
+}
+
+#sheet-area img {
+    width: 100%;
 }
 
 /*-------- BUTTONS --------*/
@@ -59,6 +61,39 @@ button {
 
 button:hover {
     background-color: #577B94 !important;
+}
+
+/*-------- IMPORT --------*/
+
+.hidden {
+    margin-left: 7%;
+    margin-right: 70%;
+    margin-bottom: 1%;
+    padding: 1%;
+    border: 2px solid #313E4735;
+}
+
+.hidden div label {
+    text-decoration: underline #313E4775;
+    padding-bottom: 2%;
+}
+
+#inputImportSubmit {
+    background-color: #313E47 !important;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    border: none !important;
+    vertical-align: top;
+}
+
+#alert-ok {
+    margin-left: 5.4%;
+    margin-right: 7%;
+}
+
+.btn-close {
+    background-color: #FFFFFF;
+    color: #313E47;
 }
 
 /*-------- FOOTER --------*/
