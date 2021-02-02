@@ -15,11 +15,9 @@
         </div>
     </div>
     <div id="hideImport" class="hidden">
-        <div>
-            <label for="formFileMultiple" class="form-label">Choisissez le ficher à importer :</label>
-        </div>
         <div class="input-group" id="inputDiv">
             <form method="POST" action="" enctype="multipart/form-data">
+                <label for="inputImportFile" class="form-label">Choisissez le ficher à importer :</label>
                 <p><input type="file" class="form-control form-control-sm" name="file" id="inputImportFile"></p>
                 <p>Année : <input id="year" min="14" value="21" max="99" type="number"></p>
                 <p><input type="submit" value="Importer" class="input-group-text" id="inputImportSubmit"
