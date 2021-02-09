@@ -10,6 +10,8 @@ from flask import flash
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
 
+
+
 app = Flask(__name__)
 # Attention le mdp la celui de votre BDD                        V
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:user@127.0.0.1:5432/v_passage"
@@ -22,7 +24,6 @@ app.config['UPLOAD_EXTENSIONS'] = ['.csv']
 app.config['UPLOAD_PATH'] = 'temp'
 # app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
-
 
 
 class v_passage(db.Model):
@@ -92,7 +93,6 @@ from io import BytesIO
 @app.route('/', methods=['POST'])
 def upload_file():
     # charger le ficher dans le serveur
-
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
     if filename != '':
@@ -104,19 +104,13 @@ def upload_file():
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
 
     # traitment ficher
-    print(uploaded_file)
-    df=pds.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", header=None)
-    print(df)
+    df = pds.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", header=None)
     return redirect(url_for('index'))
-
 
 
 # EXPORT
 
 from flask import send_file
-
-
-import datetime
 
 @app.route('/export', methods=['GET'])
 def download_file():
@@ -133,7 +127,6 @@ def download_file():
     # seeking was necessary. Python 3.5.2, Flask 0.12.2
     mem.seek(0)
     proxy.close()
-
     return send_file(
         mem,
         as_attachment=True,
