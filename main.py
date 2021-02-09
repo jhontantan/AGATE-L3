@@ -1,5 +1,6 @@
 import csv
 import os
+import pandas as pds
 
 from flask import Flask, render_template, request, redirect, url_for
 from flask_migrate import Migrate
@@ -84,9 +85,14 @@ def page_not_found():
     return render_template('404.html')
 
 
+from io import StringIO
+from io import BytesIO
+
 # IMPORT
 @app.route('/', methods=['POST'])
 def upload_file():
+    # charger le ficher dans le serveur
+
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
     if filename != '':
@@ -96,19 +102,20 @@ def upload_file():
             return redirect(url_for('index'))
         flash('Le chargement a été réalisé avec succès ', 'success')
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+
+    # traitment ficher
+    print(uploaded_file)
+    df=pds.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", header=None)
+    print(df)
     return redirect(url_for('index'))
 
-
-# flash('Document uploaded successfully.')
-# 'file uploaded successfully'
 
 
 # EXPORT
 
 from flask import send_file
 
-from io import StringIO
-from io import BytesIO
+
 import datetime
 
 @app.route('/export', methods=['GET'])
