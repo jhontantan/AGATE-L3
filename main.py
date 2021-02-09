@@ -9,6 +9,9 @@ from flask import flash
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
 
+# pour faire fonctionner le tableau, installer npm puis :
+# npm install handsontable
+
 app = Flask(__name__)
 # Attention le mdp la celui de votre BDD                        V
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:user@127.0.0.1:5432/v_passage"

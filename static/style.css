@@ -12,9 +12,9 @@ body {
     height: auto;
 }
 
-h1 {
+#main-title {
     text-transform: uppercase !important;
-    font-size: 2.1vw !important;
+    font-size: 1.6vw !important;
     margin-bottom: 0 !important;
 }
 
@@ -27,7 +27,7 @@ header {
 /*-------- MAIN CONTENT --------*/
 #main-bloc {
     padding-top : 1.5%;
-    padding-bottom : 6%;
+    padding-bottom : 4%;
 }
 
 .col-space {
@@ -43,6 +43,10 @@ header {
     width: 100%;
 }
 
+#hot-display-license-info {
+    display:none;
+}
+
 /*-------- BUTTONS --------*/
 .btn-toolbar {
     padding-left: 7%;
@@ -50,7 +54,7 @@ header {
     padding-bottom : 1.5%;
 }
 
-button {
+#btn-export, #btn-import {
     background-color: #313E47 !important;
     text-transform: uppercase;
     font-size: 0.9vw !important;
@@ -60,7 +64,7 @@ button {
     vertical-align: top;
 }
 
-button:hover {
+#btn-export:hover, #btn-import:hover {
     background-color: #577B94 !important;
 }
 
@@ -111,11 +115,12 @@ button:hover {
     padding: 1.4% !important;
 }
 
+
 /*-------- FOOTER --------*/
 footer {
     padding-left: 7%;
     padding-right: 7%;
-    padding-bottom : 3%;
+    padding-bottom : 2%;
     border-top: 2px solid #313E4735;
 }
 
