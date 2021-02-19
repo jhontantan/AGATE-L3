@@ -115,7 +115,7 @@ def upload_file():
     # charger le ficher dans le serveur
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
-
+    annee = request.form['yearValue']
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
@@ -126,8 +126,7 @@ def upload_file():
         # traitment ficher
         global df
         df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";")
-        print(df)
-        lienRefGeo()
+        lienRefGeo(annee)
         return redirect(url_for('index'))
 
     flash('Choisissez un fichier ', 'danger')
@@ -136,12 +135,16 @@ def upload_file():
 
 # RegGeo
 @app.route('/testRef')
-def lienRefGeo():
+def lienRefGeo(annee):
     # Trucs utiles
     # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     tableName = 'insee.s_2012_com19_pop'
+    com = 'com' + annee
+    libcom = 'libcom' + annee
+    df.rename(columns={'com': com, 'libcom': libcom}, inplace=True)
+
     tab = get_types(df)
 
     creation_temp_table(tableName)
