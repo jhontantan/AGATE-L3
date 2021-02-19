@@ -1,8 +1,8 @@
 import csv
 import os
-import pandas as pds
+import pandas as pd
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask import flash
@@ -11,6 +11,8 @@ from flask import flash
 # pip install -r requirements.txt
 
 
+# dataFrame pandas (tableu deux dimension) vide à utiliser pour traitement de donnes
+df = pd.DataFrame()
 
 app = Flask(__name__)
 # Attention le mdp la celui de votre BDD                        V
@@ -77,13 +79,13 @@ def index():
 def test():
     return render_template('base.html')
 
-@app.route('/importation')
-def importation():
-    return render_template('importation.html')
 
 @app.route('/404')
 def page_not_found():
     return render_template('404.html')
+
+
+
 
 
 from io import StringIO
@@ -102,18 +104,32 @@ def upload_file():
             return redirect(url_for('index'))
         flash('Le chargement a été réalisé avec succès ', 'success')
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-
-    # traitment ficher
-    df = pds.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", header=None)
+        # traitment ficher
+        global df
+        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", header=None)
+        print(df)
+        return redirect(url_for('index'))
+    flash('Choisissez un fichier ', 'danger')
     return redirect(url_for('index'))
 
+
+
+
+
+# @app.route('/temp/<filename>')
+# def upload(filename):
+
+
+#     return send_from_directory(app.config['UPLOAD_PATH'], filename)
 
 # EXPORT
 
 from flask import send_file
 
+
 @app.route('/export', methods=['GET'])
 def download_file():
+
     filename = 'Export_Agate.csv'
     row = ['hello', 'world']
     proxy = StringIO()
