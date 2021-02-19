@@ -2,7 +2,7 @@ import csv
 import os
 import pandas as pd
 
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask import flash
@@ -127,28 +127,14 @@ def upload_file():
 
 # EXPORT
 
-from flask import send_file
-
-
 @app.route('/export', methods=['GET'])
 def download_file():
+    global df
+    df.to_csv('export.csv', sep=";", index=False)
+    return send_file('export.csv',
+                     mimetype='text/csv',
+                     attachment_filename='export.csv',
+                     as_attachment=True)
 
-    filename = 'Export_Agate.csv'
-    row = ['hello', 'world']
-    proxy = StringIO()
 
-    writer = csv.writer(proxy)
-    writer.writerow(row)
 
-    # Creating the byteIO object from the StringIO Object
-    mem = BytesIO()
-    mem.write(proxy.getvalue().encode())
-    # seeking was necessary. Python 3.5.2, Flask 0.12.2
-    mem.seek(0)
-    proxy.close()
-    return send_file(
-        mem,
-        as_attachment=True,
-        attachment_filename=filename,
-        mimetype='text/csv'
-    )
