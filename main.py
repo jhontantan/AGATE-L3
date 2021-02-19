@@ -10,6 +10,9 @@ from flask import flash
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
 
+# pour faire fonctionner le tableau, installer npm puis :
+# npm install handsontable
+
 
 # dataFrame pandas (tableu deux dimension) vide à utiliser pour traitement de donnes
 df = pd.DataFrame()

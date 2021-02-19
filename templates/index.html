@@ -5,26 +5,52 @@
 <div id="main-bloc">
     <div class="btn-toolbar" role="toolbar" aria-label="Utilitary buttons">
         <div class="col-1">
-            <button class="btn btn-primary" type="button" onclick="myFunction()" >Import</button>
+            <button id="btn-import" class="btn btn-primary" type="button" onclick="myFunction()">Import</button>
         </div>
         <div class="col-space"></div>
         <div class="col-1">
-            <button name="b_export" type="button" onclick="window.location.href = 'export';" class="btn btn-secondary">Export</button>
+            <button id="btn-export" name="b_export" type="button" onclick="window.location.href = 'export';" class="btn btn-secondary">
+                Export
+            </button>
         </div>
     </div>
-    <div id="hideImport" class="hidden" >
-        <div>
-            <label form="formFileMultiple" class="form-label">Choisissez le ficher à importer :</label>
-        </div>
-         <div class="input-group" id="inputDiv">
+    <div id="hideImport" class="hidden">
+        <div class="input-group" id="inputDiv">
             <form method="POST" action="" enctype="multipart/form-data">
-                    <p><input type="file" class="form-control form-control-sm" name="file" id="inputImportFile" ></p>
-                    <p><input type="submit" value="Importer" class="input-group-text" id="inputImportSubmit"  aria-describedby="inputImportSubmit" aria-label="Upload"></p>
+                <label for="inputImportFile" class="form-label">Choisissez le ficher à importer :</label>
+                <p><input type="file" class="form-control form-control-sm" name="file" id="inputImportFile"></p>
+                <p>Année : <input id="year" min="14" value="21" max="99" type="number"></p>
+                <p><input type="submit" value="Importer" class="input-group-text" id="inputImportSubmit"
+                          aria-describedby="inputImportSubmit" aria-label="Upload"></p>
             </form>
-         </div>
+        </div>
     </div>
     <div id="sheet-area">
-        <img src="static/tableur.png"/>
+        <div id="tableau"></div>
+        <link href="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.css" rel="stylesheet" media="screen">
+        <script src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/languages/fr-FR.js"></script>
+        <script>
+            var data = [ [] ];
+
+            var container = document.getElementById('tableau');
+            var hot = new Handsontable(container, {
+              data: data,
+              colWidth: 500,
+              rowHeights: 30,
+              width: '100%',
+              height: 620,
+              minRows: 20,
+              minCols: 35,
+              minSpareRows: 1,
+              rowHeaders: true,
+              colHeaders: true,
+              contextMenu: true,
+              language: 'fr-FR',
+              filters: true,
+              dropdownMenu: true
+            });
+        </script>
     </div>
 </div>
 

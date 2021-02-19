@@ -12,9 +12,10 @@ body {
     height: auto;
 }
 
-h1 {
+#main-title {
     text-transform: uppercase !important;
-    font-size: 1.8rem !important;
+    font-size: 1.6vw !important;
+    margin-bottom: 0 !important;
 }
 
 header {
@@ -26,7 +27,7 @@ header {
 /*-------- MAIN CONTENT --------*/
 #main-bloc {
     padding-top : 1.5%;
-    padding-bottom : 6%;
+    padding-bottom : 4%;
 }
 
 .col-space {
@@ -42,6 +43,10 @@ header {
     width: 100%;
 }
 
+#hot-display-license-info {
+    display:none;
+}
+
 /*-------- BUTTONS --------*/
 .btn-toolbar {
     padding-left: 7%;
@@ -49,17 +54,17 @@ header {
     padding-bottom : 1.5%;
 }
 
-button {
+#btn-export, #btn-import {
     background-color: #313E47 !important;
     text-transform: uppercase;
+    font-size: 0.9vw !important;
     border: none !important;
     width: 100%;
     height: auto;
     vertical-align: top;
-    /*box-shadow: 0px 5px #151D21;*/
 }
 
-button:hover {
+#btn-export:hover, #btn-import:hover {
     background-color: #577B94 !important;
 }
 
@@ -73,40 +78,55 @@ button:hover {
     border: 2px solid #313E4735;
 }
 
+.hidden div {
+    font-size: 1vw !important;
+}
+
 .hidden div label {
     text-decoration: underline #313E4775;
+    font-size: 1.1vw !important;
     padding-bottom: 2%;
 }
 
 #inputImportSubmit {
     background-color: #313E47 !important;
+    font-size: 0.9vw !important;
     color: #FFFFFF;
     text-transform: uppercase;
     border: none !important;
     vertical-align: top;
 }
 
-#alert-ok {
+#inputImportFile {
+    font-size: 0.9vw !important;
+}
+
+.alert.alert-success.alert-dismissible.fade.show {
     margin-left: 5.4%;
     margin-right: 7%;
+    margin-bottom: 0%;
+    font-size: 0.9vw !important;
+    padding: 1%;
 }
 
 .btn-close {
     background-color: #FFFFFF;
     color: #313E47;
+    padding: 1.4% !important;
 }
+
 
 /*-------- FOOTER --------*/
 footer {
     padding-left: 7%;
     padding-right: 7%;
-    padding-bottom : 3%;
+    padding-bottom : 2%;
     border-top: 2px solid #313E4735;
 }
 
 footer div {
     padding-top : 1%;
-    font-size: 0.75rem;
+    font-size: 0.6vw !important;
 }
 
 footer div a {
@@ -129,14 +149,3 @@ input[type=submit]{
 .hidden {
      display:none;
 }
-
-/*
-.mt-0 {
-    margin-top: 0 !important;
-}
-
-.row {
-    margin-right: 0px;
-}
-
-}*/

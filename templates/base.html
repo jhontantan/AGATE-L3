@@ -22,23 +22,23 @@
                          class="loat-left" alt="">
                 </div>
                 <div class="col-9 align-self-center">
-                    <h1>Gestion et traitement de données géographiques</h1>
+                    <h1 id="main-title">Gestion et traitement de données géographiques</h1>
                 </div>
 
             </div>
         </header>
         <!-- Message Flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <ul class=flashes>
-            {% for category, message in messages %}
-            <div class="alert alert-{{category}} alert-dismissible fade show" id="alert-ok" role="alert">
-                {{message}}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
-        </ul>
-        {% endif %}
+            {% if messages %}
+            <ul class=flashes>
+                {% for category, message in messages %}
+                <div class="alert alert-{{category}} alert-dismissible fade show" id="alert-ok" role="alert">
+                    {{message}}
+                    <button type="button" onclick=delete_flash(this) class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </ul>
+            {% endif %}
         {% endwith %}
 
         {% block content %}{% endblock %}
@@ -47,6 +47,11 @@
             <!-- JS -->
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
             <script src="/static/script.js"></script>
+            <script>
+                function delete_flash(flash){
+                    $(flash).parent().remove()
+                }
+            </script>
 
             <div>© 2021 Agate Territoires | <a href="https://agate-territoires.fr/">Site officiel</a></div>
         </footer>
