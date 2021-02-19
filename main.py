@@ -1,11 +1,22 @@
 import csv
 import os
 import pandas as pd
+import psycopg2
+import psycopg2.extras
+
 
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask import flash
+from os import environ
+import sqlalchemy as sqlA
+from sqlalchemy import create_engine
+# Info bdd
+DB_HOST = "localhost"
+DB_NAME = "agate"
+DB_USER = "postgres"
+DB_PASS = "user"
 
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
@@ -14,15 +25,19 @@ from flask import flash
 # npm install handsontable
 
 
-# dataFrame pandas (tableu deux dimension) vide à utiliser pour traitement de donnes
+# dataFrame pandas (tableau deux dimension) vide à utiliser pour traitement de donnes
 df = pd.DataFrame()
-
 app = Flask(__name__)
-# Attention le mdp la celui de votre BDD                        V
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:user@127.0.0.1:5432/v_passage"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate"
+db_uri = environ.get('SQLALCHEMY_DATABASE_URI')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+
+
 
 #  IMPORT
 app.config['UPLOAD_EXTENSIONS'] = ['.csv']
@@ -100,6 +115,7 @@ def upload_file():
     # charger le ficher dans le serveur
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
+
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
@@ -109,26 +125,35 @@ def upload_file():
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
         # traitment ficher
         global df
-        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", header=None)
+        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";")
         print(df)
+        lienRefGeo()
         return redirect(url_for('index'))
+
     flash('Choisissez un fichier ', 'danger')
+    # On appel la fonction refGeo
+    return redirect(url_for('index'))
+
+# RegGeo
+@app.route('/testRef')
+def lienRefGeo():
+    # Trucs utiles
+    # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
+    # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    tableName = 'insee.s_2012_com19_pop'
+    tab = get_types(df)
+
+    creation_temp_table(tableName)
+
     return redirect(url_for('index'))
 
 
 
 
-
-# @app.route('/temp/<filename>')
-# def upload(filename):
-
-
-#     return send_from_directory(app.config['UPLOAD_PATH'], filename)
-
 # EXPORT
 
 from flask import send_file
-
 
 @app.route('/export', methods=['GET'])
 def download_file():
@@ -152,3 +177,35 @@ def download_file():
         attachment_filename=filename,
         mimetype='text/csv'
     )
+
+## Fonctions annexes
+def creation_temp_table(name):
+    engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
+
+    # # Setup Connexion + definition du curseur
+    conn = engine.connect()
+
+    # # Recuperation des types
+    df_types = get_types(df)
+
+    try:
+        frame = df.to_sql((name+'_temp'), conn, if_exists='replace',index=False, dtype=df_types)
+    except ValueError as vx:
+        print(vx)
+    except Exception as ex:
+        print(ex)
+    else:
+        print("PostgreSQL Table %s has been created successfully." % name)
+    finally:
+        conn.close()
+
+def get_types(dfparam):
+    res = {}
+    for i, j in zip(dfparam.columns, dfparam.dtypes):
+        # if "object" in str(j) and i.startswith('com'):
+        #     res.update({i: sqlA.types.VARCHAR(length=5)})
+        if "object" in str(j):
+            res.update({i: sqlA.types.VARCHAR(length=255)})
+        elif "int" in str(j):
+            res.update({i: sqlA.types.INT()})
+    return res
