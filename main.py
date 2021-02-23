@@ -11,10 +11,11 @@ from flask import flash
 # pip install -r requirements.txt
 
 # pour faire fonctionner le tableau, installer npm puis :
+# node.js
 # npm install handsontable
 
 
-# dataFrame pandas (tableu deux dimension) vide à utiliser pour traitement de donnes
+# dataFrame pandas (tableau deux dimension) vide à utiliser pour traitement de donnes
 df = pd.DataFrame()
 
 app = Flask(__name__)
@@ -68,7 +69,6 @@ class v_passage(db.Model):
     #     self.name = name
     #     self.model = model
     #     self.doors = doors
-    #
 
 
 # @Site
@@ -88,9 +88,9 @@ def page_not_found():
     return render_template('404.html')
 
 
-
 from io import StringIO
 from io import BytesIO
+
 
 # IMPORT
 @app.route('/', methods=['POST'])
@@ -105,26 +105,15 @@ def upload_file():
             return redirect(url_for('index'))
         flash('Le chargement a été réalisé avec succès ', 'success')
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-        # traitment ficher
+        # traitement ficher
         global df
         df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", header=None)
-        print(df)
         return redirect(url_for('index'))
     flash('Choisissez un fichier ', 'danger')
     return redirect(url_for('index'))
 
 
-
-
-
-# @app.route('/temp/<filename>')
-# def upload(filename):
-
-
-#     return send_from_directory(app.config['UPLOAD_PATH'], filename)
-
 # EXPORT
-
 @app.route('/export', methods=['GET'])
 def download_file():
     global df
@@ -135,4 +124,10 @@ def download_file():
                      as_attachment=True)
 
 
-
+# UPDATE
+@app.route('/update', methods=['GET', 'POST'])
+def update_dataframe():
+    global df
+    df_dic = df.to_dict('records')
+    json = df.to_json(orient='records')
+    return render_template('index.html', title='Outil Agate', data=json)
