@@ -4,7 +4,6 @@ import pandas as pd
 import psycopg2
 import psycopg2.extras
 
-
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -12,6 +11,7 @@ from flask import flash
 from os import environ
 import sqlalchemy as sqlA
 from sqlalchemy import create_engine
+
 # Info bdd
 DB_HOST = "localhost"
 DB_NAME = "agate"
@@ -35,9 +35,6 @@ db_uri = environ.get('SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
-
-
 
 #  IMPORT
 app.config['UPLOAD_EXTENSIONS'] = ['.csv']
@@ -103,11 +100,9 @@ def page_not_found():
     return render_template('404.html')
 
 
-
-
-
 from io import StringIO
 from io import BytesIO
+
 
 # IMPORT
 @app.route('/', methods=['POST'])
@@ -133,6 +128,7 @@ def upload_file():
     # On appel la fonction refGeo
     return redirect(url_for('index'))
 
+
 # RegGeo
 @app.route('/testRef')
 def lienRefGeo(annee):
@@ -140,27 +136,36 @@ def lienRefGeo(annee):
     # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    tableName = 'insee.s_2012_com19_pop'
-    com = 'com' + annee
-    libcom = 'libcom' + annee
-    df.rename(columns={'com': com, 'libcom': libcom}, inplace=True)
+    tableName = 'insees_2012_com19_pop'
+
+    # com = 'com' + annee
+    # libcom = 'libcom' + annee
+    # df.rename(columns={'com': com, 'libcom': libcom}, inplace=True)
 
     tab = get_types(df)
 
-    creation_temp_table(tableName)
+    creation_temp_table(tableName, annee)
+
+    # Recupération v_passage
+    #
+    # chaine = ''
+    # for i in range(14,int(annee),1):
+    #     chaine += 'com'+ str(i) + ', libcom' + str(i) + ', cco'+ str(i) + ', '
+    # chaine = chaine.rstrip(chaine[-2])
+    # chaine += ' dep, libdep, tcg18, libtcg18, reg, libreg, id_deleg, deleg,'
+    # print('Chaine : ')
+    # print(chaine)
 
     return redirect(url_for('index'))
-
-
 
 
 # EXPORT
 
 from flask import send_file
 
+
 @app.route('/export', methods=['GET'])
 def download_file():
-
     filename = 'Export_Agate.csv'
     row = ['hello', 'world']
     proxy = StringIO()
@@ -181,18 +186,24 @@ def download_file():
         mimetype='text/csv'
     )
 
-## Fonctions annexes
-def creation_temp_table(name):
-    engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
 
-    # # Setup Connexion + definition du curseur
+## Fonctions annexes
+def creation_temp_table(name, annee):
+    # Setup Connexion + definition du curseur
+
+    engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
     conn = engine.connect()
 
-    # # Recuperation des types
+    # Recuperation des types
     df_types = get_types(df)
 
+    # Demander une liste des villes à fusionner
+    # listeVille = ['Lyon', 'Marseille']
+    # Recuperation com{Annee} et libcom{Anne1e} (Ajout de sécurité nécéssaire si maintenu)
+
+
     try:
-        frame = df.to_sql((name+'_temp'), conn, if_exists='replace',index=False, dtype=df_types)
+        frame = df.to_sql((name + '_temp'), conn, if_exists='replace', index=False, dtype=df_types)
     except ValueError as vx:
         print(vx)
     except Exception as ex:
@@ -200,7 +211,14 @@ def creation_temp_table(name):
     else:
         print("PostgreSQL Table %s has been created successfully." % name)
     finally:
+
         conn.close()
+
+    # Fusion des villes (ébauche)
+    # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
+    # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    # for i in range(len(listeVille)):
+    #     cur.execute("UPDATE (name) SET (colonne)", (name+'_temp'), (listeVille[i]))
 
 def get_types(dfparam):
     res = {}
