@@ -1,11 +1,22 @@
 import csv
 import os
 import pandas as pd
+import psycopg2
+import psycopg2.extras
 
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask import flash
+from os import environ
+import sqlalchemy as sqlA
+from sqlalchemy import create_engine
+
+# Info bdd
+DB_HOST = "localhost"
+DB_NAME = "agate"
+DB_USER = "postgres"
+DB_PASS = "user"
 
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
@@ -17,10 +28,11 @@ from flask import flash
 
 # dataFrame pandas (tableau deux dimension) vide à utiliser pour traitement de donnes
 df = pd.DataFrame()
-
 app = Flask(__name__)
-# Attention le mdp la celui de votre BDD                        V
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:user@127.0.0.1:5432/v_passage"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate"
+db_uri = environ.get('SQLALCHEMY_DATABASE_URI')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -98,6 +110,7 @@ def upload_file():
     # charger le ficher dans le serveur
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
+    annee = request.form['yearValue']
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
@@ -107,9 +120,42 @@ def upload_file():
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
         # traitement ficher
         global df
-        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", header=None)
+        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";")
+        lienRefGeo(annee)
         return redirect(url_for('index'))
+
     flash('Choisissez un fichier ', 'danger')
+    # On appel la fonction refGeo
+    return redirect(url_for('index'))
+
+
+# RegGeo
+@app.route('/testRef')
+def lienRefGeo(annee):
+    # Trucs utiles
+    # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
+    # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    tableName = 'insees_2012_com19_pop'
+
+    # com = 'com' + annee
+    # libcom = 'libcom' + annee
+    # df.rename(columns={'com': com, 'libcom': libcom}, inplace=True)
+
+    tab = get_types(df)
+
+    creation_temp_table(tableName, annee)
+
+    # Recupération v_passage
+    #
+    # chaine = ''
+    # for i in range(14,int(annee),1):
+    #     chaine += 'com'+ str(i) + ', libcom' + str(i) + ', cco'+ str(i) + ', '
+    # chaine = chaine.rstrip(chaine[-2])
+    # chaine += ' dep, libdep, tcg18, libtcg18, reg, libreg, id_deleg, deleg,'
+    # print('Chaine : ')
+    # print(chaine)
+
     return redirect(url_for('index'))
 
 
@@ -131,3 +177,47 @@ def update_dataframe():
     df_dic = df.to_dict('records')
     json = df.to_json(orient='records')
     return render_template('index.html', title='Outil Agate', data=json)
+
+## Fonctions annexes
+def creation_temp_table(name, annee):
+    # Setup Connexion + definition du curseur
+
+    engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
+    conn = engine.connect()
+
+    # Recuperation des types
+    df_types = get_types(df)
+
+    # Demander une liste des villes à fusionner
+    # listeVille = ['Lyon', 'Marseille']
+    # Recuperation com{Annee} et libcom{Anne1e} (Ajout de sécurité nécéssaire si maintenu)
+
+
+    try:
+        frame = df.to_sql((name + '_temp'), conn, if_exists='replace', index=False, dtype=df_types)
+    except ValueError as vx:
+        print(vx)
+    except Exception as ex:
+        print(ex)
+    else:
+        print("PostgreSQL Table %s has been created successfully." % name)
+    finally:
+
+        conn.close()
+
+    # Fusion des villes (ébauche)
+    # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
+    # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    # for i in range(len(listeVille)):
+    #     cur.execute("UPDATE (name) SET (colonne)", (name+'_temp'), (listeVille[i]))
+
+def get_types(dfparam):
+    res = {}
+    for i, j in zip(dfparam.columns, dfparam.dtypes):
+        # if "object" in str(j) and i.startswith('com'):
+        #     res.update({i: sqlA.types.VARCHAR(length=5)})
+        if "object" in str(j):
+            res.update({i: sqlA.types.VARCHAR(length=255)})
+        elif "int" in str(j):
+            res.update({i: sqlA.types.INT()})
+    return res
