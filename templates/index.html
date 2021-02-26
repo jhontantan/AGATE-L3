@@ -5,7 +5,7 @@
 <div id="main-bloc">
     <div class="btn-toolbar" role="toolbar" aria-label="Utilitary buttons">
         <div class="col-1">
-            <button id="btn-import" class="btn btn-primary" type="button" onclick="myFunction()">Import</button>
+           <button id="btn-import" class="btn btn-primary" type="button" onclick="myFunction()">Import</button>
         </div>
         <div class="col-space"></div>
         <div class="col-1">
@@ -16,10 +16,13 @@
     </div>
     <div id="hideImport" class="hidden">
         <div class="input-group" id="inputDiv">
-            <form method="POST" action="" enctype="multipart/form-data">
+            <form method="POST" action="import" enctype="multipart/form-data">
                 <label for="inputImportFile" class="form-label">Choisissez le ficher à importer :</label>
                 <p><input type="file" class="form-control form-control-sm" name="file" id="inputImportFile"></p>
-                <p>Année : <input id="year" min="14" value="21" max="99" type="number" name="yearValue"></p>
+                <p>Nom de la table : <input type="text" id="table-name" name="table-name" required minlength="10" size="30"></p>
+                <p>Année des données : <input id="year-data" min="00" value="21" max="99" type="number" name="year-data"></p>
+                <p>Année du referentiel: <input id="year-ref" min="00" value="21" max="99" type="number" name="year-ref"></p>
+                <p>Commentaire : <textarea rows = "5" cols = "60" name="commentaire"></textarea></p>
                 <p><input type="submit" value="Importer" class="input-group-text" id="inputImportSubmit"
                           aria-describedby="inputImportSubmit" aria-label="Upload"></p>
             </form>

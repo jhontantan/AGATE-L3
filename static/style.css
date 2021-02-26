@@ -145,7 +145,15 @@ input[type=submit]{
 
 }
 
+input[type="text"] #table-name
+{
+    size:50;
+}
+
 /*-------- Scripts Hidden--------*/
 .hidden {
      display:none;
 }
+
+
+
