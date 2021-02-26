@@ -105,12 +105,17 @@ from io import BytesIO
 
 
 # IMPORT
-@app.route('/', methods=['POST'])
+@app.route('/import', methods=['POST'])
 def upload_file():
     # charger le ficher dans le serveur
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
-    annee = request.form['yearValue']
+    yearData = request.form['year-data']
+    yearRef = request.form['year-ref']
+    tableName = request.form['table-name']
+    commentaire = request.form['commentaire']
+
+
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
@@ -121,7 +126,7 @@ def upload_file():
         # traitement ficher
         global df
         df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";")
-        lienRefGeo(annee)
+        lienRefGeo(tableName, yearRef, yearData, commentaire)
         return redirect(url_for('index'))
 
     flash('Choisissez un fichier ', 'danger')
@@ -131,25 +136,23 @@ def upload_file():
 
 # RegGeo
 @app.route('/testRef')
-def lienRefGeo(annee):
+def lienRefGeo(tableName, yearRef, yearData, commentaire):
     # Trucs utiles
     # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    tableName = 'insees_2012_com19_pop'
-
-    # com = 'com' + annee
-    # libcom = 'libcom' + annee
+    # com = 'com' + yearRef
+    # libcom = 'libcom' + yearRef
     # df.rename(columns={'com': com, 'libcom': libcom}, inplace=True)
 
     tab = get_types(df)
 
-    creation_temp_table(tableName, annee)
+    creation_temp_table(tableName, yearRef, yearData, commentaire)
 
     # Recupération v_passage
     #
     # chaine = ''
-    # for i in range(14,int(annee),1):
+    # for i in range(14,int(yearRef),1):
     #     chaine += 'com'+ str(i) + ', libcom' + str(i) + ', cco'+ str(i) + ', '
     # chaine = chaine.rstrip(chaine[-2])
     # chaine += ' dep, libdep, tcg18, libtcg18, reg, libreg, id_deleg, deleg,'
@@ -178,8 +181,9 @@ def update_dataframe():
     json = df.to_json(orient='records')
     return render_template('index.html', title='Outil Agate', data=json)
 
+import psycopg2.extras
 ## Fonctions annexes
-def creation_temp_table(name, annee):
+def creation_temp_table(name, yearRef, yearData, commentaire):
     # Setup Connexion + definition du curseur
 
     engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
@@ -188,13 +192,8 @@ def creation_temp_table(name, annee):
     # Recuperation des types
     df_types = get_types(df)
 
-    # Demander une liste des villes à fusionner
-    # listeVille = ['Lyon', 'Marseille']
-    # Recuperation com{Annee} et libcom{Anne1e} (Ajout de sécurité nécéssaire si maintenu)
-
-
     try:
-        frame = df.to_sql((name + '_temp'), conn, if_exists='replace', index=False, dtype=df_types)
+        frame = df.to_sql((name + '_temp'), conn, if_exists='fail', index=False, dtype=df_types)
     except ValueError as vx:
         print(vx)
     except Exception as ex:
@@ -202,14 +201,12 @@ def creation_temp_table(name, annee):
     else:
         print("PostgreSQL Table %s has been created successfully." % name)
     finally:
-
         conn.close()
 
-    # Fusion des villes (ébauche)
+    # Jointure
     # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    # for i in range(len(listeVille)):
-    #     cur.execute("UPDATE (name) SET (colonne)", (name+'_temp'), (listeVille[i]))
+    # cur.execute()
 
 def get_types(dfparam):
     res = {}
