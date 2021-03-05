@@ -30,6 +30,7 @@ df = pd.DataFrame()
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate"
+engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
 db_uri = environ.get('SQLALCHEMY_DATABASE_URI')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -115,17 +116,15 @@ def upload_file():
     tableName = request.form['table-name']
     commentaire = request.form['commentaire']
 
-
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
             flash('error ', 'danger')
             return redirect(url_for('index'))
-        flash('Le chargement a été réalisé avec succès ', 'success')
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
         # traitment ficher
         global df
-        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";")
+        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", dtype={"com":"string"})
         lienRefGeo(tableName, yearRef, yearData, commentaire)
         return redirect(url_for('index'))
 
@@ -141,23 +140,64 @@ def lienRefGeo(tableName, yearRef, yearData, commentaire):
     # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # com = 'com' + yearRef
-    # libcom = 'libcom' + yearRef
-    # df.rename(columns={'com': com, 'libcom': libcom}, inplace=True)
+    com = 'com14'
+    df.rename(columns={'com': com}, inplace=True)
 
     tab = get_types(df)
 
-    creation_temp_table(tableName, yearRef, yearData, commentaire)
+    # Création table temporaire
+    # cur.execute('DROP TABLE IF EXISTS (%s);', (tableName,))
+    # cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
+
+    # print(cur.fetchall())
+    # print(cur.fetchone()['name'])
+
+    # conn.commit()
+    # conn.close()
+
+    # Fonction qui met en base le csv
+    # creation_temp_table(tableName, yearRef, yearData, commentaire)
 
     # Recupération v_passage
-    #
-    # chaine = ''
-    # for i in range(14,int(yearRef),1):
-    #     chaine += 'com'+ str(i) + ', libcom' + str(i) + ', cco'+ str(i) + ', '
-    # chaine = chaine.rstrip(chaine[-2])
-    # chaine += ' dep, libdep, tcg18, libtcg18, reg, libreg, id_deleg, deleg,'
-    # print('Chaine : ')
-    # print(chaine)
+
+    chaine = 'SELECT com14, '
+    chaine += 'com' + yearRef + ', libcom' + yearRef + ', cco' + yearRef + ', libcco' + yearRef + ','
+    chaine += ' id_deleg, deleg, tcg18, libtcg18, alp, dep, libdep,  reg, libreg FROM v_passage'
+
+    # Setup Connexion
+    conn = engine.connect()
+    df.astype({'com14':'string'})
+    # print(df['com'])
+    jointure = pd.read_sql(chaine, conn)
+    # print("Jointure : ")
+
+    # print("Données : ")
+    # print(df.columns.values.tolist())
+    # print(df)
+
+    dfRes = jointure.set_index('com14').join(df.set_index('com14'), how='left', on='com14')
+    # print(dfRes.columns.values.tolist())
+    # dfRes = dfRes.drop(dfRes.columns['com14'], axis=1)
+
+
+    groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "libcom" + yearRef, "id_deleg", "deleg", "tcg18", "libtcg18", "alp", "dep",
+               "libdep",
+               "reg", "libreg"]
+    dfRes.groupby(by=groupby).sum()
+    print(dfRes)
+
+    # # Mise en base
+    # df_types = get_types(dfRes)
+    # try:
+    #     frame = dfRes.to_sql((tableName), conn, if_exists='fail', index=False, dtype=df_types)
+    # except ValueError as vx:
+    #     flash('Une table de ce nom existe déja', 'danger')
+    # except Exception as ex:
+    #     print(ex)
+    # else:
+    #     flash('Le chargement a été réalisé avec succès ', 'success')
+    # finally:
+    #     conn.close()
 
     return redirect(url_for('index'))
 
@@ -189,32 +229,31 @@ def download_file():
         mimetype='text/csv'
     )
 
+
 import psycopg2.extras
+
+
 ## Fonctions annexes
 def creation_temp_table(name, yearRef, yearData, commentaire):
     # Setup Connexion + definition du curseur
 
-    engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
     conn = engine.connect()
 
     # Recuperation des types
     df_types = get_types(df)
+    print(yearRef, yearData, commentaire)
 
     try:
         frame = df.to_sql((name + '_temp'), conn, if_exists='fail', index=False, dtype=df_types)
     except ValueError as vx:
-        print(vx)
+        flash('Une table de ce nom existe déja', 'danger')
     except Exception as ex:
         print(ex)
     else:
-        print("PostgreSQL Table %s has been created successfully." % name)
+        flash('Le chargement a été réalisé avec succès ', 'success')
     finally:
         conn.close()
 
-    # Jointure
-    # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
-    # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    # cur.execute()
 
 def get_types(dfparam):
     res = {}
