@@ -43,10 +43,6 @@ header {
     width: 100%;
 }
 
-#hot-display-license-info {
-    display:none;
-}
-
 /*-------- BUTTONS --------*/
 .btn-toolbar {
     padding-left: 7%;
@@ -54,9 +50,16 @@ header {
     padding-bottom : 1.5%;
 }
 
-#btn-export, #btn-import {
+.btn-toolbar .col-1 {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+}
+
+#btn-export, #btn-import, #btn-update, #btn-submit {
     background-color: #313E47 !important;
+    margin: 0 !important;
     text-transform: uppercase;
+    color: #FFFFFF;
     font-size: 0.9vw !important;
     border: none !important;
     width: 100%;
@@ -64,42 +67,22 @@ header {
     vertical-align: top;
 }
 
-#btn-export:hover, #btn-import:hover {
+#btn-submit {
+    text-transform: capitalize !important;
+    width: auto !important;
+}
+
+#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover {
     background-color: #577B94 !important;
 }
 
 /*-------- IMPORT --------*/
 
-.hidden {
-    margin-left: 7%;
-    margin-right: 70%;
-    margin-bottom: 1%;
-    padding: 1%;
-    border: 2px solid #313E4735;
-}
-
-.hidden div {
-    font-size: 1vw !important;
-}
-
-.hidden div label {
-    text-decoration: underline #313E4775;
-    font-size: 1.1vw !important;
-    padding-bottom: 2%;
-}
-
-#inputImportSubmit {
-    background-color: #313E47 !important;
-    font-size: 0.9vw !important;
-    color: #FFFFFF;
-    text-transform: uppercase;
-    border: none !important;
-    vertical-align: top;
-}
-
 #inputImportFile {
     font-size: 0.9vw !important;
 }
+
+/*-------- ALERTS --------*/
 
 .alert.alert-success.alert-dismissible.fade.show {
     margin-left: 5.4%;
@@ -137,23 +120,5 @@ footer div a {
 footer div a:hover {
     color : #577B94;
 }
-
-/*-------- INPUT --------*/
-
-input[type=submit]{
-    font-family: Helvetica, Arial, sans-serif !important;
-
-}
-
-input[type="text"] #table-name
-{
-    size:50;
-}
-
-/*-------- Scripts Hidden--------*/
-.hidden {
-     display:none;
-}
-
 
 
