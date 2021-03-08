@@ -18,6 +18,9 @@ DB_NAME = "agate"
 DB_USER = "postgres"
 DB_PASS = "user"
 
+# JOINTURE
+COM_JOINTURE = 'com14'
+
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
 
@@ -43,39 +46,39 @@ app.config['UPLOAD_PATH'] = 'temp'
 # app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
 
-
-class v_passage(db.Model):
-    __tablename__ = 'v_passage'
-    com14 = db.Column(db.String(10), primary_key=True)
-    libcom14 = db.Column(db.String(150), nullable=False)
-    geom = db.Column(db.String(30000), nullable=False)
-    com15 = db.Column(db.String(10), nullable=False)
-    libcom15 = db.Column(db.String(150), nullable=False)
-    com16 = db.Column(db.String(10), nullable=False)
-    libcom16 = db.Column(db.String(150), nullable=False)
-    com17 = db.Column(db.String(10), nullable=False)
-    libcom17 = db.Column(db.String(150), nullable=False)
-    com18 = db.Column(db.String(10), nullable=False)
-    libcom18 = db.Column(db.String(150), nullable=False)
-    com19 = db.Column(db.String(10), nullable=False)
-    libcom19 = db.Column(db.String(150), nullable=False)
-    com20 = db.Column(db.String(10), nullable=False)
-    libcom20 = db.Column(db.String(150), nullable=False)
-    cco15 = db.Column(db.String(9), nullable=True)
-    libcco15 = db.Column(db.String(150), nullable=True)
-    cco16 = db.Column(db.String(9), nullable=True)
-    libcco16 = db.Column(db.String(150), nullable=True)
-    cco17 = db.Column(db.String(9), nullable=True)
-    libcco17 = db.Column(db.String(150), nullable=True)
-    cco18 = db.Column(db.String(9), nullable=True)
-    libcco18 = db.Column(db.String(150), nullable=True)
-    cco19 = db.Column(db.String(9), nullable=True)
-    libcco19 = db.Column(db.String(150), nullable=True)
-    cco20 = db.Column(db.String(9), nullable=True)
-    libcco20 = db.Column(db.String(150), nullable=True)
-
-    def __repr__(self):
-        return '<v_passage %r>' % self.id
+#
+# class v_passage(db.Model):
+#     __tablename__ = 'v_passage'
+#     com14 = db.Column(db.String(10), primary_key=True)
+#     libcom14 = db.Column(db.String(150), nullable=False)
+#     geom = db.Column(db.String(30000), nullable=False)
+#     com15 = db.Column(db.String(10), nullable=False)
+#     libcom15 = db.Column(db.String(150), nullable=False)
+#     com16 = db.Column(db.String(10), nullable=False)
+#     libcom16 = db.Column(db.String(150), nullable=False)
+#     com17 = db.Column(db.String(10), nullable=False)
+#     libcom17 = db.Column(db.String(150), nullable=False)
+#     com18 = db.Column(db.String(10), nullable=False)
+#     libcom18 = db.Column(db.String(150), nullable=False)
+#     com19 = db.Column(db.String(10), nullable=False)
+#     libcom19 = db.Column(db.String(150), nullable=False)
+#     com20 = db.Column(db.String(10), nullable=False)
+#     libcom20 = db.Column(db.String(150), nullable=False)
+#     cco15 = db.Column(db.String(9), nullable=True)
+#     libcco15 = db.Column(db.String(150), nullable=True)
+#     cco16 = db.Column(db.String(9), nullable=True)
+#     libcco16 = db.Column(db.String(150), nullable=True)
+#     cco17 = db.Column(db.String(9), nullable=True)
+#     libcco17 = db.Column(db.String(150), nullable=True)
+#     cco18 = db.Column(db.String(9), nullable=True)
+#     libcco18 = db.Column(db.String(150), nullable=True)
+#     cco19 = db.Column(db.String(9), nullable=True)
+#     libcco19 = db.Column(db.String(150), nullable=True)
+#     cco20 = db.Column(db.String(9), nullable=True)
+#     libcco20 = db.Column(db.String(150), nullable=True)
+#
+#     def __repr__(self):
+#         return '<v_passage %r>' % self.id
 
     # def __init__(self, name, model, doors):
     #     self.name = name
@@ -134,74 +137,38 @@ def upload_file():
 
 
 # RegGeo
+# TODO : lienRefGeo : mieux gérer les types lors de l'export en bdd
 @app.route('/testRef')
 def lienRefGeo(tableName, yearRef, yearData, commentaire):
-    # Trucs utiles
-    # conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
-    # cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
+    df.rename(columns={'com': COM_JOINTURE}, inplace=True)
 
-    com = 'com14'
-    df.rename(columns={'com': com}, inplace=True)
+    ### Recupération v_passage
 
-    tab = get_types(df)
+    chaine = 'SELECT ' + COM_JOINTURE + ', com' + yearRef + ', libcom' + yearRef + ', cco' + yearRef + ', libcco' + \
+             yearRef + ', id_deleg, deleg, tcg18, libtcg18, alp, dep, libdep,  reg, libreg FROM v_passage'
 
-    # Création table temporaire
-    # cur.execute('DROP TABLE IF EXISTS (%s);', (tableName,))
-    # cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
-
-    # print(cur.fetchall())
-    # print(cur.fetchone()['name'])
-
-    # conn.commit()
-    # conn.close()
-
-    # Fonction qui met en base le csv
-    # creation_temp_table(tableName, yearRef, yearData, commentaire)
-
-    # Recupération v_passage
-
-    # Ajouter une variable globale
-    chaine = 'SELECT com14, '
-    chaine += 'com' + yearRef + ', libcom' + yearRef + ', cco' + yearRef + ', libcco' + yearRef + ','
-    chaine += ' id_deleg, deleg, tcg18, libtcg18, alp, dep, libdep,  reg, libreg FROM v_passage'
-
-    # Setup Connexion
     conn = engine.connect()
-    # print(df['com'])
+
     jointure = pd.read_sql(chaine, conn)
-    # print("Jointure : ")
 
-    # print("Données : ")
-    # print(df.columns.values.tolist())
-    # print(df)
-
-    # dfRes = jointure.set_index('com14').join(df.set_index('com14'), how='left', on='com14')
-    dfRes = df.set_index('com14').join(jointure.set_index('com14'), how='left', on='com14')
-    # print(dfRes.columns.values.tolist())
-    # dfRes = dfRes.drop(dfRes.columns['com14'], axis=1)
+    ### Jointure
+    dfRes = jointure.set_index(COM_JOINTURE).join(df.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
 
 
-    groupby = ["com14", "com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "libcom" + yearRef, "id_deleg", "deleg", "tcg18", "libtcg18", "alp", "dep",
-               "libdep",
-               "reg", "libreg"]
-    dfRes.groupby(by=groupby).sum()
-
-    print(dfRes.columns.values.tolist())
+    # Suppression COM_JOINTURE du dataframe
+    dfRes = dfRes.reset_index()
+    dfRes = dfRes.drop(columns=[COM_JOINTURE])
 
 
-    # # Mise en base
-    # df_types = get_types(dfRes)
-    # try:
-    #     frame = dfRes.to_sql((tableName), conn, if_exists='fail', index=False, dtype=df_types)
-    # except ValueError as vx:
-    #     flash('Une table de ce nom existe déja', 'danger')
-    # except Exception as ex:
-    #     print(ex)
-    # else:
-    #     flash('Le chargement a été réalisé avec succès ', 'success')
-    # finally:
-    #     conn.close()
+    ### GroupBy
+    groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "id_deleg", "deleg", "tcg18",
+               "libtcg18", "alp", "dep", "libdep", "reg", "libreg"]
+    dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
+
     print(dfRes)
+    ### Mise en base
+    mise_en_base(tableName, dfRes)
 
     return redirect(url_for('index'))
 
@@ -238,17 +205,16 @@ import psycopg2.extras
 
 
 ## Fonctions annexes
-def creation_temp_table(name, yearRef, yearData, commentaire):
+def mise_en_base(tableName, dataframe):
     # Setup Connexion + definition du curseur
 
     conn = engine.connect()
 
     # Recuperation des types
-    df_types = get_types(df)
-    print(yearRef, yearData, commentaire)
+    dataframe_types = get_types(dataframe)
 
     try:
-        frame = df.to_sql((name + '_temp'), conn, if_exists='fail', index=False, dtype=df_types)
+        frame = dataframe.to_sql((tableName), conn, if_exists='fail', index=False, dtype=dataframe_types)
     except ValueError as vx:
         flash('Une table de ce nom existe déja', 'danger')
     except Exception as ex:
@@ -258,7 +224,7 @@ def creation_temp_table(name, yearRef, yearData, commentaire):
     finally:
         conn.close()
 
-
+#TODO : get_types amélioration
 def get_types(dfparam):
     res = {}
     for i, j in zip(dfparam.columns, dfparam.dtypes):
