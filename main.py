@@ -160,13 +160,13 @@ def lienRefGeo(tableName, yearRef, yearData, commentaire):
 
     # Recupération v_passage
 
+    # Ajouter une variable globale
     chaine = 'SELECT com14, '
     chaine += 'com' + yearRef + ', libcom' + yearRef + ', cco' + yearRef + ', libcco' + yearRef + ','
     chaine += ' id_deleg, deleg, tcg18, libtcg18, alp, dep, libdep,  reg, libreg FROM v_passage'
 
     # Setup Connexion
     conn = engine.connect()
-    df.astype({'com14':'string'})
     # print(df['com'])
     jointure = pd.read_sql(chaine, conn)
     # print("Jointure : ")
@@ -175,16 +175,19 @@ def lienRefGeo(tableName, yearRef, yearData, commentaire):
     # print(df.columns.values.tolist())
     # print(df)
 
-    dfRes = jointure.set_index('com14').join(df.set_index('com14'), how='left', on='com14')
+    # dfRes = jointure.set_index('com14').join(df.set_index('com14'), how='left', on='com14')
+    dfRes = df.set_index('com14').join(jointure.set_index('com14'), how='left', on='com14')
     # print(dfRes.columns.values.tolist())
     # dfRes = dfRes.drop(dfRes.columns['com14'], axis=1)
 
 
-    groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "libcom" + yearRef, "id_deleg", "deleg", "tcg18", "libtcg18", "alp", "dep",
+    groupby = ["com14", "com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "libcom" + yearRef, "id_deleg", "deleg", "tcg18", "libtcg18", "alp", "dep",
                "libdep",
                "reg", "libreg"]
     dfRes.groupby(by=groupby).sum()
-    print(dfRes)
+
+    print(dfRes.columns.values.tolist())
+
 
     # # Mise en base
     # df_types = get_types(dfRes)
@@ -198,6 +201,7 @@ def lienRefGeo(tableName, yearRef, yearData, commentaire):
     #     flash('Le chargement a été réalisé avec succès ', 'success')
     # finally:
     #     conn.close()
+    print(dfRes)
 
     return redirect(url_for('index'))
 
