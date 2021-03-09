@@ -122,7 +122,7 @@ def upload_file():
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
-            flash('error ', 'danger')
+            flash("Erreur d'import ", 'danger')
             return redirect(url_for('index'))
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
         # traitement ficher
