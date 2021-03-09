@@ -164,6 +164,8 @@ def lienRefGeo(tableName, yearRef, yearData, commentaire):
     ### GroupBy
     groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "id_deleg", "deleg", "tcg18",
                "libtcg18", "alp", "dep", "libdep", "reg", "libreg"]
+    
+    # Somme
     dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
 
     print(dfRes)
