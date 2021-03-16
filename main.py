@@ -137,7 +137,7 @@ def upload_file():
 
 
 # RegGeo
-# TODO : lienRefGeo : mieux gérer les types lors de l'export en bdd
+# TODO : lienRefGeo : mieux gérer les types lors de l'export en bdd et ajout commentaire
 @app.route('/testRef')
 def lienRefGeo(tableName, yearRef, yearData, commentaire):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
