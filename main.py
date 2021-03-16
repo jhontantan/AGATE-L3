@@ -41,11 +41,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+
+
 #  IMPORT
 app.config['UPLOAD_EXTENSIONS'] = ['.csv']
 app.config['UPLOAD_PATH'] = 'temp'
 # app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
+
+
 
 #
 # class v_passage(db.Model):
@@ -230,3 +234,7 @@ def get_types(dfparam):
         elif "int" in str(j):
             res.update({i: sqlA.types.INT()})
     return res
+    
+#serveur
+if __name__ == "__main__":
+  app.run(host='0.0.0.0',port=1060)
