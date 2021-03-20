@@ -6,6 +6,14 @@ from flask import Flask, render_template, request, redirect, url_for, send_file
 from flask import flash
 from sqlalchemy import create_engine
 
+# ---------- Mail ---------- #
+# import fp as fp
+from flask_mail import Mail, Message
+from config import Config
+MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']
+# -------------------------- #
+
+
 # Info bdd
 DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
@@ -25,20 +33,27 @@ NOM_TABLE_REFGEO = 'v_passage'
 df = pd.DataFrame()
 
 app = Flask(__name__)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://" + DB_USER + ":" + DB_PASS + "@" + DB_HOST + ":"+ DB_PORT +"/" + DB_NAME
-engine = create_engine('postgresql+psycopg2://' + DB_USER + ":" + DB_PASS + "@" + DB_HOST + ":"+ DB_PORT +"/" + DB_NAME, pool_recycle=3600)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-
-#  IMPORT
-app.config['UPLOAD_EXTENSIONS'] = ['.csv']
-app.config['UPLOAD_PATH'] = 'temp'
-# app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
+app.config.from_object(Config)
+mail = Mail(app)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
+
+# ---------- Config ---------- #
+## BDD
+# app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate"
+engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
+db_uri = environ.get('SQLALCHEMY_DATABASE_URI')
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+migrate = Migrate(app, db) # A enlever
+
+## IMPORT
+# app.config['UPLOAD_EXTENSIONS'] = ['.csv']
+# app.config['UPLOAD_PATH'] = 'temp'
+## app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
 
 
 # @Site
+
 
 @app.route('/')
 def index():
@@ -139,6 +154,17 @@ def download_file():
                      attachment_filename='export.csv',
                      as_attachment=True)
 
+# MAIL
+@app.route('/send')
+def send():
+   msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
+   msg.body = "A remplir avec des infos complémentaire suivant le besoin du client"
+
+   with app.open_resource("export.csv") as fp:
+      msg.attach("export.csv", "text/csv", fp.read())
+
+   mail.send(msg)
+   return "Mail envoyé"
 
 # UPDATE
 @app.route('/update', methods=['GET', 'POST'])
