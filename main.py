@@ -5,16 +5,15 @@ import sqlalchemy as sqla
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from flask import flash
 from sqlalchemy import create_engine
-
-# ---------- Mail ---------- #
-# import fp as fp
 from flask_mail import Mail, Message
 from config import Config
-MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']
-# -------------------------- #
 
+# ---------- Informations ---------- #
+# Prérequis
+# pip freeze > requirements.txt
+# pip install -r requirements.txt
 
-# Info bdd
+# Database
 DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
 DB_NAME = "agate"
@@ -26,35 +25,23 @@ COM_JOINTURE = 'com14'
 CHAMPS_JOINTURE = 'id_deleg, deleg, tcg18, libtcg18, alp, dep, libdep,  reg, libreg'
 NOM_TABLE_REFGEO = 'v_passage'
 
-# pip freeze > requirements.txt
-# pip install -r requirements.txt
+# Mail
+MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']
+# ---------------------------------- #
 
 # Dataframe global
 df = pd.DataFrame()
 
+# ----- Lancement de l'app ----- #
 app = Flask(__name__)
 app.config.from_object(Config)
-mail = Mail(app)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
+mail = Mail(app)
 
-# ---------- Config ---------- #
-## BDD
-# app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate"
+# ---------- Engine Databse ---------- #
 engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
-db_uri = environ.get('SQLALCHEMY_DATABASE_URI')
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-migrate = Migrate(app, db) # A enlever
 
-## IMPORT
-# app.config['UPLOAD_EXTENSIONS'] = ['.csv']
-# app.config['UPLOAD_PATH'] = 'temp'
-## app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
-
-
-# @Site
-
-
+# @Routes
 @app.route('/')
 def index():
     return render_template('index.html', title='Outil Agate')
