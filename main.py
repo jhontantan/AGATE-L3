@@ -7,7 +7,8 @@ from flask import flash
 from sqlalchemy import create_engine
 
 # Info bdd
-DB_HOST = "localhost"
+DB_HOST = "127.0.0.1"
+DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
 DB_PASS = "user"
@@ -25,8 +26,8 @@ df = pd.DataFrame()
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate"
-engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://" + DB_USER + ":" + DB_PASS + "@" + DB_HOST + ":"+ DB_PORT +"/" + DB_NAME
+engine = create_engine('postgresql+psycopg2://' + DB_USER + ":" + DB_PASS + "@" + DB_HOST + ":"+ DB_PORT +"/" + DB_NAME, pool_recycle=3600)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -109,6 +110,16 @@ def lienRefGeo(tableName, yearRef, yearData, commentaire):
 
     # Somme
     dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
+
+    # En attente de l'implémentation visuelle -> A tester
+    # if (variableDropdown == "somme"):
+    #     dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
+    # elif (variableDropdown == "max"):
+    #     dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).max()
+    # elif (variableDropdown == "min"):
+    #     dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).min()
+    # else:
+    #     flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min", 'danger')
 
     print(dfRes)
 
