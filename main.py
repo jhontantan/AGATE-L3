@@ -1,4 +1,8 @@
 import os
+from time import sleep
+from io import StringIO
+from io import BytesIO
+
 import pandas as pd
 import sqlalchemy as sqla
 
@@ -18,7 +22,7 @@ DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
-DB_PASS = "user"
+DB_PASS = "root"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
@@ -70,29 +74,21 @@ def upload_file():
     operation = request.form['operation']
     separator = request.form['separateur']
 
+    uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+    # traitement ficher
+    df_import = pd.DataFrame()
+    df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";",
+                            dtype={"com": "string"})
+    data: pd.DataFrame = lienRefGeo(df_import, tableName, yearRef, yearData, commentaire)
 
-    if filename != '':
-        file_ext = os.path.splitext(filename)[1]
-        if file_ext not in app.config['UPLOAD_EXTENSIONS']:
-            flash("Erreur d'import ", 'danger')
-            return redirect(url_for('index'))
-        uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-        # traitement ficher
-        global df
-        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator, dtype={"com": "string"})
-        lienRefGeo(tableName, yearRef, yearData, operation, commentaire)
-        return redirect(url_for('index'))
-    flash('Choisissez un fichier ', 'danger')
-    return redirect(url_for('index'))
+    return data.to_json()
 
 # RegGeo
-# TODO : lienRefGeo : mieux gérer les types lors de l'export en bdd et ajout commentaire
-@app.route('/testRef')
-def lienRefGeo(tableName, yearRef, yearData, operation, commentaire):
+def lienRefGeo(dfImport, tableName, yearRef, yearData, commentaire):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
-    df.rename(columns={'com': COM_JOINTURE}, inplace=True)
+    dfImport.rename(columns={'com': COM_JOINTURE}, inplace=True)
 
-    ### Recupération v_passage
+    ### Récupération v_passage
 
     champs_jointure = list_to_str(CHAMPS_JOINTURE)
 
@@ -104,7 +100,7 @@ def lienRefGeo(tableName, yearRef, yearData, operation, commentaire):
     jointure = pd.read_sql(chaine, conn)
 
     ### Jointure
-    dfRes = jointure.set_index(COM_JOINTURE).join(df.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    dfRes = jointure.set_index(COM_JOINTURE).join(dfImport.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
 
     # Suppression COM_JOINTURE du dataframe
     dfRes = dfRes.reset_index()
@@ -128,13 +124,13 @@ def lienRefGeo(tableName, yearRef, yearData, operation, commentaire):
     ### Mise en base
     mise_en_base(tableName, dfRes)
 
-    return redirect(url_for('index'))
+    return dfRes
 
 
 # EXPORT
 @app.route('/export', methods=['GET'])
 def download_file():
-    global df
+    global df  # TODO: remove
     df.to_csv('export.csv', sep=";", index=False)
     return send_file('export.csv',
                      mimetype='text/csv',
@@ -156,7 +152,7 @@ def send():
 # UPDATE
 @app.route('/update', methods=['GET', 'POST'])
 def update_dataframe():
-    global df
+    global df  # TODO: remove
     df_dic = df.to_dict('records')
     json = df.to_json(orient='records')
     return render_template('index.html', title='Outil Agate', data=json)

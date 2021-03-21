@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block head %}
+    {{ super() }}
+    <link href="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.css" rel="stylesheet"
+          media="screen">
+{% endblock %}
 
+{% block content %}
     <div id="main-bloc">
         <div class="btn-toolbar" role="toolbar" aria-label="Utilitary buttons">
             <div class="col-1">
@@ -11,6 +16,7 @@
             </div>
             <div class="col-space"></div>
             <div class="col-1">
+                {# TODO: pourquoi utiliser window.location quand on peut simplement faire un lien HTML avec la balise <a href=...> ?#}
                 <button id="btn-export" name="b_export" type="button" onclick="window.location.href = 'export';"
                         class="btn btn-secondary">
                     Export
@@ -18,6 +24,7 @@
             </div>
             <div class="col-space"></div>
             <div class="col-1">
+                {# TODO: pourquoi utiliser window.location quand on peut simplement faire un lien HTML avec la balise <a href=...> ?#}
                 <button id="btn-update" type="button" onclick="window.location.href = 'update';"
                         class="btn btn-secondary">Update
                 </button>
@@ -29,7 +36,7 @@
              aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                    <form method="POST" action="import" enctype="multipart/form-data">
+                    <form method="POST" action="import" id="import-form" enctype="multipart/form-data">
                         <div class="modal-header">
                             <h5 class="modal-title" id="exampleModalLabel">Importer un fichier</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -37,14 +44,27 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <p><input type="file" class="form-control form-control-sm" name="file" id="inputImportFile">
+                            <p><input type="file" accept=".csv" class="form-control form-control-sm" name="file"
+                                      required id="inputImportFile">
                             </p>
-                            <p>Nom de la table : <input type="text" id="table-name" name="table-name" required
-                                                        minlength="3" size="37"></p>
-                            <p>Année des données : <input id="year-data" min="00" value="21" max="99" type="number"
-                                                          name="year-data"></p>
-                            <p>Année du referentiel: <input id="year-ref" min="00" value="21" max="99" type="number"
-                                                            name="year-ref"></p>
+                            <p>
+                                <label for="table-name">Nom de la table : </label>
+                                <input type="text" id="table-name" name="table-name" required minlength="3" size="37">
+                            </p>
+                            <p>
+                                <label for="year-data">Année des données : </label>
+                                <input id="year-data" min="00" value="18" max="99" required type="number"
+                                       name="year-data">
+                            </p>
+                            <p>
+                                <label for="year-ref">Année du référentiel : </label>
+                                <input id="year-ref" min="00" value="18" max="99" required type="number"
+                                       name="year-ref">
+                            </p>
+                            <p>
+                                <label for="commentaire">Commentaire : </label>
+                                <textarea rows="5" cols="55" name="commentaire"></textarea>
+                            </p>
                             <p>Opération :
                                 <select name="operation" id="drp_dwn_op" >
                                     <option value="somme" selected>somme</option>
@@ -57,7 +77,6 @@
                                     <option value=";" selected>;</option>
                                     <option value=",">,</option>
                                 </select>
-                            <p>Commentaire : <textarea rows="5" cols="55" name="commentaire"></textarea></p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
@@ -69,37 +88,68 @@
         </div>
         <div id="sheet-area">
             <div id="tableau"></div>
-            <link href="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.css" rel="stylesheet"
-                  media="screen">
-            <script src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.js"></script>
-            <script type="text/javascript"
-                    src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/languages/fr-FR.js"></script>
-            <script>
-                var data = [[]];
-
-                var container = document.getElementById('tableau');
-                var hot = new Handsontable(container, {
-                    data: data,
-                    colWidth: 500,
-                    rowHeights: 30,
-                    width: '100%',
-                    height: 620,
-                    minRows: 20,
-                    minCols: 35,
-                    minSpareRows: 1,
-                    rowHeaders: true,
-                    colHeaders: true,
-                    colWidths: 100,
-                    contextMenu: true,
-                    language: 'fr-FR',
-                    filters: true,
-                    dropdownMenu: true,
-                    licenseKey: 'non-commercial-and-evaluation'
-                });
-            </script>
         </div>
     </div>
+{% endblock %}
 
+{% block js %}
+    {{ super() }}
+    <script>
+        var container = document.getElementById('tableau');
+        var hot = new Handsontable(container, {
+            data: [[]],
+            colWidth: 500,
+            rowHeights: 30,
+            width: '100%',
+            height: 620,
+            minRows: 20,
+            minCols: 35,
+            minSpareRows: 1,
+            rowHeaders: true,
+            colHeaders: true,
+            colWidths: 100,
+            contextMenu: true,
+            language: 'fr-FR',
+            filters: true,
+            dropdownMenu: true,
+            licenseKey: 'non-commercial-and-evaluation'
+        });
 
+        async function submitImportForm(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const url = form.action;
+            const formData = new FormData(form);
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData
+            });
+            const json = await response.json();
+
+            var info = JSON.parse(JSON.stringify(json));
+            console.log(info);
+
+            let results = [];
+            const headers = Object.keys(info);
+            const nbLines = Object.values(info[headers[0]]).length;
+
+            results.push(headers)
+
+            for (let i = 0; i < nbLines; i++) {
+                let resultLine = [];
+                for (let header of headers) {
+                    resultLine.push(info[header][i]);
+                }
+                results.push(resultLine);
+            }
+
+            hot.updateSettings({
+                data: results,
+            });
+        }
+
+        const importForm = document.getElementById("import-form");
+        importForm.addEventListener("submit", submitImportForm);
+    </script>
 {% endblock %}
 
