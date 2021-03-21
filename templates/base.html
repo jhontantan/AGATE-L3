@@ -1,60 +1,77 @@
 <!doctype html>
 <html lang="fr">
-    <head>
+
+<head>
+    {% block head %}
         <!-- Required meta tags -->
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+              integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ"
+              crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
         <title>Outil Agate</title>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    </head>
+    {% endblock %}
+</head>
 
-    <body>
-        <header>
-            <div class="row">
-                <div class="col-1">
-                    <img src="{{ url_for('static', filename='logo_Agate.jpg') }}" width="200" height="200" id="logo"
-                         class="loat-left" alt="">
+
+<body>
+<header>
+    <div class="row">
+        <div class="col-1">
+            <img src="{{ url_for('static', filename='logo_Agate.jpg') }}" width="200" height="200" id="logo"
+                 class="loat-left" alt="">
+        </div>
+        <div class="col-9 align-self-center">
+            <h1 id="main-title">Gestion et traitement de données géographiques</h1>
+        </div>
+
+    </div>
+</header>
+<!-- Message Flash -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class=flashes>
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert">
+                    {{ message }}
+                    <button type="button" onclick=delete_flash(this) class="btn-close" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
                 </div>
-                <div class="col-9 align-self-center">
-                    <h1 id="main-title">Gestion et traitement de données géographiques</h1>
-                </div>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
 
-            </div>
-        </header>
-        <!-- Message Flash -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class=flashes>
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert">
-                            {{ message }}
-                            <button type="button" onclick=delete_flash(this) class="btn-close" data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
+{% block content %}{% endblock %}
 
-        {% block content %}{% endblock %}
-
-        <footer>
-            <div>© 2021 Agate Territoires | <a href="https://agate-territoires.fr/">Site officiel</a></div>
-        </footer>
-        <!-- JS -->
-        <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-        <script src="/static/script.js"></script>
-        <script>
-            function delete_flash(flash) {
-                $(flash).parent().remove()
-            }
-        </script>
-    </body>
+<footer>
+    <div>© 2021 Agate Territoires | <a href="https://agate-territoires.fr/">Site officiel</a></div>
+</footer>
+<!-- JS -->
+{% block js %}
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+            integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+            integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+            integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/languages/fr-FR.js"></script>
+    <script src="/static/script.js"></script>
+    <script>
+        function delete_flash(flash) {
+            $(flash).parent().remove()
+        }
+    </script>
+{% endblock %}
+</body>
 </html>
