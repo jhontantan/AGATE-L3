@@ -77,14 +77,14 @@ def upload_file():
     uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
     # traitement ficher
     df_import = pd.DataFrame()
-    df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";",
+    df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
                             dtype={"com": "string"})
-    data: pd.DataFrame = lienRefGeo(df_import, tableName, yearRef, yearData, commentaire)
+    data: pd.DataFrame = lienRefGeo(df_import, tableName, yearRef, yearData, operation, commentaire)
 
     return data.to_json()
 
 # RegGeo
-def lienRefGeo(dfImport, tableName, yearRef, yearData, commentaire):
+def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
     dfImport.rename(columns={'com': COM_JOINTURE}, inplace=True)
 

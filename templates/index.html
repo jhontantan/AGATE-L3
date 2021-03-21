@@ -53,30 +53,31 @@
                             </p>
                             <p>
                                 <label for="year-data">Année des données : </label>
-                                <input id="year-data" min="00" value="18" max="99" required type="number"
+                                <input id="year-data" min="00" value="21" max="99" required type="number"
                                        name="year-data">
                             </p>
                             <p>
                                 <label for="year-ref">Année du référentiel : </label>
-                                <input id="year-ref" min="00" value="18" max="99" required type="number"
+                                <input id="year-ref" min="00" value="21" max="99" required type="number"
                                        name="year-ref">
                             </p>
-                            <p>
-                                <label for="commentaire">Commentaire : </label>
-                                <textarea rows="5" cols="55" name="commentaire"></textarea>
-                            </p>
-                            <p>Opération :
+                            <p><label for="drp_dwn_op">Opération :</label>
                                 <select name="operation" id="drp_dwn_op" >
                                     <option value="somme" selected>somme</option>
                                     <option value="max">max</option>
                                     <option value="min">min</option>
                                 </select>
                             </p>
-                            <p>Séparateur :
+                            <p><label for="drp_dwn_sep">Séparateur : </label>
                                 <select name="separateur" id="drp_dwn_sep" >
                                     <option value=";" selected>;</option>
                                     <option value=",">,</option>
                                 </select>
+                            </p>
+                            <p>
+                                <label for="commentaire">Commentaire : </label>
+                                <textarea rows="5" cols="55" name="commentaire"></textarea>
+                            </p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
