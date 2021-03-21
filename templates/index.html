@@ -45,6 +45,18 @@
                                                           name="year-data"></p>
                             <p>Année du referentiel: <input id="year-ref" min="00" value="21" max="99" type="number"
                                                             name="year-ref"></p>
+                            <p>Opération :
+                                <select name="operation" id="drp_dwn_op" >
+                                    <option value="somme" selected>somme</option>
+                                    <option value="max">max</option>
+                                    <option value="min">min</option>
+                                </select>
+                            </p>
+                            <p>Séparateur :
+                                <select name="separateur" id="drp_dwn_sep" >
+                                    <option value=";" selected>;</option>
+                                    <option value=",">,</option>
+                                </select>
                             <p>Commentaire : <textarea rows="5" cols="55" name="commentaire"></textarea></p>
                         </div>
                         <div class="modal-footer">

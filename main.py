@@ -22,11 +22,11 @@ DB_PASS = "user"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
-CHAMPS_JOINTURE = 'id_deleg, deleg, tcg18, libtcg18, alp, dep, libdep,  reg, libreg'
+CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libdep', 'reg', 'libreg']
 NOM_TABLE_REFGEO = 'v_passage'
 
 # Mail
-MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']
+MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr'] # geomatique@agate-territoires.fr
 # ---------------------------------- #
 
 # Dataframe global
@@ -67,6 +67,9 @@ def upload_file():
     yearRef = request.form['year-ref']
     tableName = request.form['table-name']
     commentaire = request.form['commentaire']
+    operation = request.form['operation']
+    separator = request.form['separateur']
+
 
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
@@ -76,24 +79,25 @@ def upload_file():
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
         # traitement ficher
         global df
-        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=";", dtype={"com": "string"})
-        lienRefGeo(tableName, yearRef, yearData, commentaire)
+        df = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator, dtype={"com": "string"})
+        lienRefGeo(tableName, yearRef, yearData, operation, commentaire)
         return redirect(url_for('index'))
     flash('Choisissez un fichier ', 'danger')
     return redirect(url_for('index'))
 
-
 # RegGeo
 # TODO : lienRefGeo : mieux gérer les types lors de l'export en bdd et ajout commentaire
 @app.route('/testRef')
-def lienRefGeo(tableName, yearRef, yearData, commentaire):
+def lienRefGeo(tableName, yearRef, yearData, operation, commentaire):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
     df.rename(columns={'com': COM_JOINTURE}, inplace=True)
 
     ### Recupération v_passage
 
+    champs_jointure = list_to_str(CHAMPS_JOINTURE)
+
     chaine = 'SELECT ' + COM_JOINTURE + ', com' + yearRef + ', libcom' + yearRef + ', cco' + yearRef + ', libcco' + \
-             yearRef + ', ' + CHAMPS_JOINTURE + ' FROM ' + NOM_TABLE_REFGEO
+             yearRef + ', ' + champs_jointure + ' FROM ' + NOM_TABLE_REFGEO
 
     conn = engine.connect()
 
@@ -107,21 +111,17 @@ def lienRefGeo(tableName, yearRef, yearData, commentaire):
     dfRes = dfRes.drop(columns=[COM_JOINTURE])
 
     ### GroupBy
-    groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "id_deleg", "deleg", "tcg18",
-               "libtcg18", "alp", "dep", "libdep", "reg", "libreg"]
+    groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef] + CHAMPS_JOINTURE
 
-    # Somme
-    dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
-
-    # En attente de l'implémentation visuelle -> A tester
-    # if (variableDropdown == "somme"):
-    #     dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
-    # elif (variableDropdown == "max"):
-    #     dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).max()
-    # elif (variableDropdown == "min"):
-    #     dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).min()
-    # else:
-    #     flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min", 'danger')
+    ### Type de GroupBy
+    if (operation == "somme"):
+        dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
+    elif (operation == "max"):
+        dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).max()
+    elif (operation == "min"):
+        dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).min()
+    else:
+        flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min", 'danger')
 
     print(dfRes)
 
@@ -194,3 +194,13 @@ def get_types(dfparam):
         elif "int" in str(j):
             res.update({i: sqla.types.INT()})
     return res
+
+# prend une liste de strings et retourne la concat de cette liste avec des ','
+def list_to_str(liste):
+    str = ""
+    for i in range(len(liste)):
+        if i == (len(liste) - 1):
+            str = str + liste[i]
+        else:
+            str = str + liste[i] + ', '
+    return str
