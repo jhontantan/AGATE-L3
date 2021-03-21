@@ -111,7 +111,7 @@ def lienRefGeo(tableName, yearRef, yearData, operation, commentaire):
     dfRes = dfRes.drop(columns=[COM_JOINTURE])
 
     ### GroupBy
-    groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef] + CHAMPS_JOINTURE
+    groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "libcco" + yearRef] + CHAMPS_JOINTURE
 
     ### Type de GroupBy
     if (operation == "somme"):
