@@ -54,9 +54,9 @@ def index():
     return render_template('index.html', title='Outil Agate')
 
 
-@app.route('/base')
-def test():
-    return render_template('base.html')
+# @app.route('/base')
+# def test():
+#     return render_template('base.html')
 
 
 @app.route('/404')
@@ -137,7 +137,7 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     else:
         flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min", 'danger')
 
-    print(dfRes)
+    # print(dfRes)
 
     ### Mise en base
     mise_en_base(tableName, dfRes)
@@ -145,19 +145,48 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     return dfRes
 
 
+def clean_data(content):
+    nb_columns = 0
+
+    for elt in content[0]:
+        if elt is None:
+            break
+        nb_columns += 1
+
+    content_good_columns = [liste[:nb_columns] for liste in content]
+    clean_content = []
+
+    for liste in content_good_columns:
+        listeEmpty = True
+        for elt in liste:
+            if elt:
+                listeEmpty = False
+        if not listeEmpty:
+            clean_content.append(liste)
+
+    return clean_content
+
+
 # EXPORT
-@app.route('/export', methods=['GET'])
+@app.route('/export', methods=['POST'])
 def download_file():
-    global df  # TODO: remove
-    df.to_csv('export.csv', sep=";", index=False)
+    content = clean_data(request.json)
+
+    columns = content[0]
+    content.remove(content[0])
+
+    df_export = pd.DataFrame.from_records(content)
+    df_export.columns = columns
+
+    df_export.to_csv('export.csv', sep=";", index=False)
     return send_file('export.csv',
                      mimetype='text/csv',
                      attachment_filename='export.csv',
                      as_attachment=True)
 
 
-# MAIL
 @app.route('/send')
+# MAIL
 def send():
     msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
     msg.body = "A remplir avec des infos complémentaire suivant le besoin du client"
@@ -168,17 +197,6 @@ def send():
     mail.send(msg)
     return "Mail envoyé"
 
-
-# UPDATE
-@app.route('/update', methods=['GET', 'POST'])
-def update_dataframe():
-    global df  # TODO: remove
-    df_dic = df.to_dict('records')
-    json = df.to_json(orient='records')
-    return render_template('index.html', title='Outil Agate', data=json)
-
-
-# Fonction qui met en base le dataframe sous le nom 'tableName'
 def mise_en_base(tableName, dataframe):
     conn = engine.connect()
 

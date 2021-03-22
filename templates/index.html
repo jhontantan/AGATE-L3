@@ -17,18 +17,17 @@
             <div class="col-space"></div>
             <div class="col-1">
                 {# TODO: pourquoi utiliser window.location quand on peut simplement faire un lien HTML avec la balise <a href=...> ?#}
-                <button id="btn-export" name="b_export" type="button" onclick="window.location.href = 'export';"
+                <button id="btn-export" name="b_export" type="button" onclick=""
                         class="btn btn-secondary">
                     Export
                 </button>
             </div>
-            <div class="col-space"></div>
-            <div class="col-1">
-                {# TODO: pourquoi utiliser window.location quand on peut simplement faire un lien HTML avec la balise <a href=...> ?#}
-                <button id="btn-update" type="button" onclick="window.location.href = 'update';"
-                        class="btn btn-secondary">Update
-                </button>
-            </div>
+            {#            <div class="col-space"></div>#}
+            {#            <div class="col-1">#}
+            {#                <button id="btn-update" type="button" onclick="window.location.href = 'update';"#}
+            {#                        class="btn btn-secondary">Update#}
+            {#                </button>#}
+            {#            </div>#}
         </div>
 
         <!-- Modal -->
@@ -96,9 +95,10 @@
 {% block js %}
     {{ super() }}
     <script>
-        var container = document.getElementById('tableau');
-        var hot = new Handsontable(container, {
-            data: [[]],
+        const data = [[]];
+        const container = document.getElementById('tableau');
+        const hot = new Handsontable(container, {
+            data: data,
             colWidth: 500,
             rowHeights: 30,
             width: '100%',
@@ -127,8 +127,7 @@
             });
             const json = await response.json();
 
-            var info = JSON.parse(JSON.stringify(json));
-            console.log(info);
+            const info = JSON.parse(JSON.stringify(json));
 
             let results = [];
             const headers = Object.keys(info);
@@ -147,10 +146,43 @@
             hot.updateSettings({
                 data: results,
             });
+
+
+        }
+
+        function downloadFile(fileName, csv) {
+            var encodedUri = encodeURI(csv);
+            var link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link); // Required for FF
+
+            link.click();
+        }
+
+        async function exportToCSV(event) {
+            event.preventDefault();
+            const url = window.location.href + "export";
+            const data_csv = JSON.stringify(hot.getData());
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: data_csv
+            });
+
+            const csv = await response.text();
+            console.log(csv);
+            downloadFile('export.csv', 'data:text/csv;charset=UTF-8,' + csv);
         }
 
         const importForm = document.getElementById("import-form");
         importForm.addEventListener("submit", submitImportForm);
+
+        const exportBtn = document.getElementById("btn-export");
+        exportBtn.addEventListener("click", exportToCSV);
     </script>
 {% endblock %}
 
