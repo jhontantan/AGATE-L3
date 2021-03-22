@@ -6,7 +6,7 @@ class Config:
 
     # ----- Import ----- #
     ## app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
-    UPLOAD_EXTENSIONS = ['.csv']
+    UPLOAD_EXTENSIONS = ['.csv', '.xlsx', 'ods']
     UPLOAD_PATH = 'temp'
 
     # ----- Mail ----- #

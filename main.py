@@ -22,7 +22,7 @@ DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
-DB_PASS = "root"
+DB_PASS = "user"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
@@ -30,7 +30,7 @@ CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libd
 NOM_TABLE_REFGEO = 'v_passage'
 
 # Mail
-MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr'] # geomatique@agate-territoires.fr
+MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']  # geomatique@agate-territoires.fr
 # ---------------------------------- #
 
 # Dataframe global
@@ -43,7 +43,10 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
 mail = Mail(app)
 
 # ---------- Engine Databse ---------- #
-engine = create_engine('postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate', pool_recycle=3600)
+engine = create_engine(
+    ('postgresql+psycopg2://' + DB_USER + ':' + DB_PASS + '@' + DB_HOST + ':' + DB_PORT + '/' + DB_NAME),
+    pool_recycle=3600)
+
 
 # @Routes
 @app.route('/')
@@ -75,13 +78,28 @@ def upload_file():
     separator = request.form['separateur']
 
     uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+
     # traitement ficher
+
     df_import = pd.DataFrame()
-    df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
-                            dtype={"com": "string"})
+
+    # Lecture faite sur le nom du fichier, améliorable (détéction du type et non lecture de l'extension)
+    if filename[-3:] == "csv":
+        df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
+                                dtype={"com": "string"})
+    elif filename[-4:] == "xlsx":
+        df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
+                                  dtype={"com": "string"}, engine="openpyxl")
+    elif filename[-3:] == "ods":
+        df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
+                                  dtype={"com": "string"}, engine="odf")
+    else:
+        flash('Type de fichier non reconnu', 'danger')
+
     data: pd.DataFrame = lienRefGeo(df_import, tableName, yearRef, yearData, operation, commentaire)
 
     return data.to_json()
+
 
 # RegGeo
 def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
@@ -137,17 +155,19 @@ def download_file():
                      attachment_filename='export.csv',
                      as_attachment=True)
 
+
 # MAIL
 @app.route('/send')
 def send():
-   msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
-   msg.body = "A remplir avec des infos complémentaire suivant le besoin du client"
+    msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
+    msg.body = "A remplir avec des infos complémentaire suivant le besoin du client"
 
-   with app.open_resource("export.csv") as fp:
-      msg.attach("export.csv", "text/csv", fp.read())
+    with app.open_resource("export.csv") as fp:
+        msg.attach("export.csv", "text/csv", fp.read())
 
-   mail.send(msg)
-   return "Mail envoyé"
+    mail.send(msg)
+    return "Mail envoyé"
+
 
 # UPDATE
 @app.route('/update', methods=['GET', 'POST'])
@@ -160,7 +180,6 @@ def update_dataframe():
 
 # Fonction qui met en base le dataframe sous le nom 'tableName'
 def mise_en_base(tableName, dataframe):
-
     conn = engine.connect()
 
     # Recuperation des types
@@ -190,6 +209,7 @@ def get_types(dfparam):
         elif "int" in str(j):
             res.update({i: sqla.types.INT()})
     return res
+
 
 # prend une liste de strings et retourne la concat de cette liste avec des ','
 def list_to_str(liste):
