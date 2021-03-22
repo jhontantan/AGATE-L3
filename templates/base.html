@@ -33,19 +33,19 @@
     </div>
 </header>
 <!-- Message Flash -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <ul class=flashes>
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert">
-                    {{ message }}
-                    <button type="button" onclick=delete_flash(this) class="btn-close" data-bs-dismiss="alert"
-                            aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        </ul>
-    {% endif %}
-{% endwith %}
+{#{% with messages = get_flashed_messages(with_categories=true) %}#}
+{#    {% if messages %}#}
+{#        <ul class=flashes>#}
+{#            {% for category, message in messages %}#}
+{#                <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert">#}
+{#                    {{ message }}#}
+{#                    <button type="button" onclick=delete_flash(this) class="btn-close" data-bs-dismiss="alert"#}
+{#                            aria-label="Close"></button>#}
+{#                </div>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#    {% endif %}#}
+{#{% endwith %}#}
 
 {% block content %}{% endblock %}
 
@@ -67,11 +67,11 @@
     <script type="text/javascript"
             src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/languages/fr-FR.js"></script>
     <script src="/static/script.js"></script>
-    <script>
-        function delete_flash(flash) {
-            $(flash).parent().remove()
-        }
-    </script>
+{#    <script>#}
+{#        function delete_flash(flash) {#}
+{#            $(flash).parent().remove()#}
+{#        }#}
+{#    </script>#}
 {% endblock %}
 </body>
 </html>
