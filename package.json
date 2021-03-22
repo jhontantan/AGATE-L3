@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "dataframe-js": "^1.4.4",
+    "handsontable": "^8.3.1"
+  }
+}

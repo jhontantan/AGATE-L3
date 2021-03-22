@@ -1,0 +1,124 @@
+/*-------- GENERAL --------*/
+body {
+    font-family: Helvetica, Arial, sans-serif !important;
+    color : #212529;
+}
+
+/*-------- HEADER --------*/
+#logo {
+    margin-top: 15%;
+    margin-bottom: 15%;
+    width: 100%;
+    height: auto;
+}
+
+#main-title {
+    text-transform: uppercase !important;
+    font-size: 1.6vw !important;
+    margin-bottom: 0 !important;
+}
+
+header {
+    padding-left: 7%;
+    padding-right: 7%;
+    border-bottom: 2px solid #313E4735;
+}
+
+/*-------- MAIN CONTENT --------*/
+#main-bloc {
+    padding-top : 1.5%;
+    padding-bottom : 4%;
+}
+
+.col-space {
+    padding-right: 1.5%;
+}
+
+#sheet-area {
+    padding: 0.2% 7%;
+    background-color: #313E47;
+}
+
+#sheet-area img {
+    width: 100%;
+}
+
+/*-------- BUTTONS --------*/
+.btn-toolbar {
+    padding-left: 7%;
+    padding-right: 7%;
+    padding-bottom : 1.5%;
+}
+
+.btn-toolbar .col-1 {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+}
+
+#btn-export, #btn-import, #btn-update, #btn-submit {
+    background-color: #313E47 !important;
+    margin: 0 !important;
+    text-transform: uppercase;
+    color: #FFFFFF;
+    font-size: 0.9vw !important;
+    border: none !important;
+    width: 100%;
+    height: auto;
+    vertical-align: top;
+}
+
+#btn-submit {
+    text-transform: capitalize !important;
+    width: auto !important;
+}
+
+#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover {
+    background-color: #577B94 !important;
+}
+
+/*-------- IMPORT --------*/
+
+#inputImportFile {
+    font-size: 0.9vw !important;
+}
+
+/*-------- ALERTS --------*/
+
+.alert.alert-success.alert-dismissible.fade.show {
+    margin-left: 5.4%;
+    margin-right: 7%;
+    margin-bottom: 0%;
+    font-size: 0.9vw !important;
+    padding: 1%;
+}
+
+.btn-close {
+    background-color: #FFFFFF;
+    color: #313E47;
+    padding: 1.4% !important;
+}
+
+
+/*-------- FOOTER --------*/
+footer {
+    padding-left: 7%;
+    padding-right: 7%;
+    padding-bottom : 2%;
+    border-top: 2px solid #313E4735;
+}
+
+footer div {
+    padding-top : 1%;
+    font-size: 0.6vw !important;
+}
+
+footer div a {
+    color : #212529;
+    text-decoration : none;
+}
+
+footer div a:hover {
+    color : #577B94;
+}
+
+
