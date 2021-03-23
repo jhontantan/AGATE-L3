@@ -1,15 +1,12 @@
 import os
-from time import sleep
-from io import StringIO
-from io import BytesIO
 
 import pandas as pd
 import sqlalchemy as sqla
-
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, render_template, request, send_file
 from flask import flash
-from sqlalchemy import create_engine
 from flask_mail import Mail, Message
+from sqlalchemy import create_engine
+
 from config import Config
 
 # ---------- Informations ---------- #
@@ -115,9 +112,15 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
 
     conn = engine.connect()
 
-    jointure = pd.read_sql(chaine, conn)
+    try:
+        jointure = pd.read_sql(chaine, conn)
+    except Exception as ex:
+        print("Erreur lors de la récupération du referentiel dans RefGeo")
+        print(ex)
+        return pd.DataFrame()
+    finally:
+        conn.close()
 
-    ### Jointure
     dfRes = jointure.set_index(COM_JOINTURE).join(dfImport.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
 
     # Suppression COM_JOINTURE du dataframe
@@ -137,7 +140,9 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     else:
         flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min", 'danger')
 
-    # print(dfRes)
+    ### Ajout Commentaire
+    dfRes['Commentaire'] = ""
+    dfRes['Commentaire'].iloc[0] = commentaire
 
     ### Mise en base
     mise_en_base(tableName, dfRes)
@@ -196,6 +201,7 @@ def send():
 
     mail.send(msg)
     return "Mail envoyé"
+
 
 def mise_en_base(tableName, dataframe):
     conn = engine.connect()
