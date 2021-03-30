@@ -153,7 +153,7 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     dfRes.loc[0, 'Commentaire'] = commentaire
 
     ### Mise en base
-    # mise_en_base(tableName, dfRes)
+    mise_en_base(tableName, dfRes)
 
     return dfRes
 
@@ -235,7 +235,7 @@ def df_to_sql(dfparam):
     res = {}
     for i, j in zip(dfparam.columns, dfparam.dtypes):
         if "object" in str(j):
-            res.update({i: sqla.types.VARCHAR})
+            res.update({i: sqla.types.TEXT})
         elif "int" in str(j):
             res.update({i: sqla.types.INT()})
     return res
