@@ -121,6 +121,14 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     finally:
         conn.close()
 
+    ### Suppression des potentiels doublons
+    cols_jointure = jointure.columns.values.tolist()
+    cols_dfImport = dfImport.columns.values.tolist()
+    for col in cols_jointure:
+        if col != COM_JOINTURE and col in cols_dfImport:
+            del dfImport[str(col)]
+
+    ### Jointure
     dfRes = jointure.set_index(COM_JOINTURE).join(dfImport.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
 
     # Suppression COM_JOINTURE du dataframe
@@ -138,14 +146,14 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     elif (operation == "min"):
         dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).min()
     else:
-        flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min", 'danger')
+        print("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min", 'danger')
 
     ### Ajout Commentaire
     dfRes['Commentaire'] = ""
-    dfRes['Commentaire'].iloc[0] = commentaire
+    dfRes.loc[0, 'Commentaire'] = commentaire
 
     ### Mise en base
-    mise_en_base(tableName, dfRes)
+    # mise_en_base(tableName, dfRes)
 
     return dfRes
 
@@ -207,7 +215,7 @@ def mise_en_base(tableName, dataframe):
     conn = engine.connect()
 
     # Recuperation des types
-    dataframe_types = get_types(dataframe)
+    dataframe_types = df_to_sql(dataframe)
 
     try:
         dataframe.to_sql((tableName), conn, if_exists='fail', index=False, dtype=dataframe_types)
@@ -221,15 +229,13 @@ def mise_en_base(tableName, dataframe):
         conn.close()
 
 
-# TODO : get_types amélioration
+# TODO : df_to_sql amélioration
 # Fonction qui retourne le tableau de types postgres associé au tableau de type dataframe entré
-def get_types(dfparam):
+def df_to_sql(dfparam):
     res = {}
     for i, j in zip(dfparam.columns, dfparam.dtypes):
-        # if "object" in str(j) and i.startswith('com'):
-        #     res.update({i: sqla.types.VARCHAR(length=5)})
         if "object" in str(j):
-            res.update({i: sqla.types.VARCHAR(length=255)})
+            res.update({i: sqla.types.VARCHAR})
         elif "int" in str(j):
             res.update({i: sqla.types.INT()})
     return res
