@@ -12,31 +12,29 @@ from sqlalchemy import create_engine
 from flask_mail import Mail, Message
 from config import Config
 
-# ---------- Informations ---------- #
-# Prérequis
+# PREREQUIS
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
 
-# Database
+# BASE DE DONNEES
 DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
-DB_PASS = "user"
+DB_PASS = "root"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
 CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libdep', 'reg', 'libreg']
 NOM_TABLE_REFGEO = 'v_passage'
 
-# Mail
+# ADRESSE MAIL
 MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']  # geomatique@agate-territoires.fr
-# ---------------------------------- #
 
-# Dataframe global
-df = pd.DataFrame()
+# --------------- #
+# LANCEMENT FLASK
+# --------------- #
 
-# ----- Lancement de l'app ----- #
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
@@ -48,26 +46,24 @@ engine = create_engine(
     pool_recycle=3600)
 
 
-# @Routes
+# INDEX DU SITE WEB
 @app.route('/')
 def index():
     return render_template('index.html', title='Outil Agate')
 
 
-# @app.route('/base')
-# def test():
-#     return render_template('base.html')
-
-
+# PAGE 404
 @app.route('/404')
 def page_not_found():
     return render_template('404.html')
 
 
-# IMPORT
+# -------------------
+# IMPORT D'UN FICHIER
+# -------------------
 @app.route('/import', methods=['POST'])
 def upload_file():
-    # charger le ficher dans le serveur
+    # Récupération des informations du formulaire
     uploaded_file = request.files['file']
     filename = uploaded_file.filename
     yearData = request.form['year-data']
@@ -77,13 +73,12 @@ def upload_file():
     operation = request.form['operation']
     separator = request.form['separateur']
 
+    # Traitement du fichier
     uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-
-    # traitement ficher
 
     df_import = pd.DataFrame()
 
-    # Lecture faite sur le nom du fichier, améliorable (détéction du type et non lecture de l'extension)
+    # Le traitement varie en fonction de l'extension (CSV, XLSX et ODS supportés)
     if filename[-3:] == "csv":
         df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
                                 dtype={"com": "string"})
@@ -96,18 +91,19 @@ def upload_file():
     else:
         flash('Type de fichier non reconnu', 'danger')
 
-    data: pd.DataFrame = lienRefGeo(df_import, tableName, yearRef, yearData, operation, commentaire)
+    # Les informations sont liés à un référentiel géographique et importés en base de données
+    data: pd.DataFrame = lien_ref_geo(df_import, tableName, yearRef, yearData, operation, commentaire)
 
+    # Les informations traitées sont renvoyés à l'affichage sous format JSON
     return data.to_json()
 
 
-# RegGeo
-def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
+# LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
+def lien_ref_geo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
     dfImport.rename(columns={'com': COM_JOINTURE}, inplace=True)
 
-    ### Récupération v_passage
-
+    # Récupération v_passage
     champs_jointure = list_to_str(CHAMPS_JOINTURE)
 
     chaine = 'SELECT ' + COM_JOINTURE + ', com' + yearRef + ', libcom' + yearRef + ', cco' + yearRef + ', libcco' + \
@@ -115,19 +111,18 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
 
     conn = engine.connect()
 
+    # Jointure
     jointure = pd.read_sql(chaine, conn)
-
-    ### Jointure
     dfRes = jointure.set_index(COM_JOINTURE).join(dfImport.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
 
     # Suppression COM_JOINTURE du dataframe
     dfRes = dfRes.reset_index()
     dfRes = dfRes.drop(columns=[COM_JOINTURE])
 
-    ### GroupBy
+    # GroupBy
     groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "libcco" + yearRef] + CHAMPS_JOINTURE
 
-    ### Type de GroupBy
+    # Type de GroupBy
     if (operation == "somme"):
         dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
     elif (operation == "max"):
@@ -135,69 +130,18 @@ def lienRefGeo(dfImport, tableName, yearRef, yearData, operation, commentaire):
     elif (operation == "min"):
         dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).min()
     else:
-        flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min", 'danger')
+        flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min",
+              'danger')  # TODO : à remplacer par un feedback au front
 
-    # print(dfRes)
-
-    ### Mise en base
+    # Mise en base
     mise_en_base(tableName, dfRes)
 
     return dfRes
 
 
-def clean_data(content):
-    nb_columns = 0
-
-    for elt in content[0]:
-        if elt is None:
-            break
-        nb_columns += 1
-
-    content_good_columns = [liste[:nb_columns] for liste in content]
-    clean_content = []
-
-    for liste in content_good_columns:
-        listeEmpty = True
-        for elt in liste:
-            if elt:
-                listeEmpty = False
-        if not listeEmpty:
-            clean_content.append(liste)
-
-    return clean_content
-
-
-# EXPORT
-@app.route('/export', methods=['POST'])
-def download_file():
-    content = clean_data(request.json)
-
-    columns = content[0]
-    content.remove(content[0])
-
-    df_export = pd.DataFrame.from_records(content)
-    df_export.columns = columns
-
-    df_export.to_csv('export.csv', sep=";", index=False)
-    return send_file('export.csv',
-                     mimetype='text/csv',
-                     attachment_filename='export.csv',
-                     as_attachment=True)
-
-
-@app.route('/send')
-# MAIL
-def send():
-    msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
-    msg.body = "A remplir avec des infos complémentaire suivant le besoin du client"
-
-    with app.open_resource("export.csv") as fp:
-        msg.attach("export.csv", "text/csv", fp.read())
-
-    mail.send(msg)
-    return "Mail envoyé"
-
+# AJOUT D'UNE NOUVELLE TABLE DANS LA BASE DE DONNEES
 def mise_en_base(tableName, dataframe):
+    # Setup Connexion + definition du curseur
     conn = engine.connect()
 
     # Recuperation des types
@@ -206,11 +150,11 @@ def mise_en_base(tableName, dataframe):
     try:
         dataframe.to_sql((tableName), conn, if_exists='fail', index=False, dtype=dataframe_types)
     except ValueError as vx:
-        flash('Une table de ce nom existe déja', 'danger')
+        flash('Une table de ce nom existe déja', 'danger')  # TODO : à remplacer par un feedback au front
     except Exception as ex:
         print(ex)
     else:
-        flash('La mise en base a été réalisée avec succes ', 'success')
+        flash('La mise en base a été réalisée avec succes ', 'success')  # TODO : à remplacer par un feedback au front
     finally:
         conn.close()
 
@@ -238,3 +182,41 @@ def list_to_str(liste):
         else:
             str = str + liste[i] + ', '
     return str
+
+
+# -------------------
+# EXPORTER UN FICHIER
+# -------------------
+@app.route('/export', methods=['POST'])
+def download_file():
+    content = request.json  # Récupération du json envoyé par l'affichage
+
+    # Séparation des colonnes et du contenu du json
+    columns = content[0]
+    content.remove(content[0])
+
+    # Création d'un dataframe à partir du contenu et des colonnes
+    df_export = pd.DataFrame.from_records(content)
+    df_export.columns = columns
+
+    # Conversion du dataframe en CSV et renvoie à l'affichage pour le téléchargement
+    df_export.to_csv('export.csv', sep=";", index=False)
+    return send_file('export.csv',
+                     mimetype='text/csv',
+                     attachment_filename='export.csv',
+                     as_attachment=True)
+
+
+# ---------------------------
+# ENVOI AUTOMATIQUE D'UN MAIL
+# ---------------------------
+@app.route('/send')
+def send():
+    msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
+    msg.body = "A remplir avec des infos complémentaire suivant le besoin du client"
+
+    with app.open_resource("export.csv") as fp:
+        msg.attach("export.csv", "text/csv", fp.read())
+
+    mail.send(msg)
+    return "Mail envoyé"
