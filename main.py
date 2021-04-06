@@ -1,12 +1,11 @@
 import os
-
 import pandas as pd
 import sqlalchemy as sqla
 import json
+
 from flask import Flask, render_template, request, send_file
-from flask import flash
 from flask_mail import Mail, Message
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exc
 from threading import Thread
 from config import Config
 
@@ -19,7 +18,7 @@ DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
-DB_PASS = "root"
+DB_PASS = "user"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
@@ -119,10 +118,10 @@ def lien_ref_geo(df_import, table_name, year_ref, year_data, operation, commenta
 
     ### Suppression des potentiels doublons
     cols_jointure = jointure.columns.values.tolist()
-    cols_dfImport = dfImport.columns.values.tolist()
+    cols_dfImport = df_import.columns.values.tolist()
     for col in cols_jointure:
         if col != COM_JOINTURE and col in cols_dfImport:
-            del dfImport[str(col)]
+            del df_import[str(col)]
 
     # Suppression COM_JOINTURE du dataframe
     try:
@@ -144,8 +143,8 @@ def lien_ref_geo(df_import, table_name, year_ref, year_data, operation, commenta
     elif operation == "min":
         df_res = df_res.groupby(by=groupby, dropna=False, as_index=False).min()
     ### Ajout Commentaire
-    dfRes['Commentaire'] = ""
-    dfRes.loc[0, 'Commentaire'] = commentaire
+    df_res['Commentaire'] = ""
+    df_res.loc[0, 'Commentaire'] = commentaire
 
     # Mise en base
     result = mise_en_base(table_name, df_res)
@@ -249,12 +248,15 @@ def cleanTempDirectory():
 # ENVOI AUTOMATIQUE D'UN MAIL
 # ---------------------------
 @app.route('/send')
-def send():
+def send_email():
     msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
-    msg.body = "A remplir avec des infos complémentaire suivant le besoin du client"
-
+    msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
     with app.open_resource("export.csv") as fp:
         msg.attach("export.csv", "text/csv", fp.read())
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return render_template('index.html')
 
-    mail.send(msg)
-    return "Mail envoyé"
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
