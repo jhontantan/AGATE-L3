@@ -6,6 +6,7 @@ from flask import Flask, render_template, request, send_file
 from flask import flash
 from flask_mail import Mail, Message
 from sqlalchemy import create_engine
+from threading import Thread
 
 from config import Config
 
@@ -198,17 +199,20 @@ def download_file():
                      as_attachment=True)
 
 
-@app.route('/send')
 # MAIL
-def send():
+@app.route('/send')
+def send_email():
     msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
-    msg.body = "A remplir avec des infos complémentaire suivant le besoin du client"
-
+    msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
     with app.open_resource("export.csv") as fp:
         msg.attach("export.csv", "text/csv", fp.read())
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return render_template('index.html')
 
-    mail.send(msg)
-    return "Mail envoyé"
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
 
 
 def mise_en_base(tableName, dataframe):
