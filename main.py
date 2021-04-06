@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 import sqlalchemy as sqla
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file,redirect,url_for
 from flask import flash
 from flask_mail import Mail, Message
 from sqlalchemy import create_engine
@@ -59,6 +59,18 @@ def index():
 @app.route('/404')
 def page_not_found():
     return render_template('404.html')
+
+@app.route('/connexion')
+def connexion():
+    return render_template('connexion.html')
+
+@app.route('/connexion', methods=['POST'])
+def validateLogin():
+    user = request.form.get('username')
+    password = request.form.get('pwd')
+
+    print(user, password)
+    return redirect(url_for('connexion'))
 
 
 # IMPORT
