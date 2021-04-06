@@ -27,11 +27,11 @@ const hot = new Handsontable(container, {
 
 // Vérification que tous les champs requis sont remplis
 function clearFields() {
-    var file = document.forms["form"]["file"].value;
-    var name = document.forms["form"]["table-name"].value;
-    var ydata = document.forms["form"]["year-data"].value;
-    var yref = document.forms["form"]["year-ref"].value;
-    if (file == null || name == null || name == "" || ydata == null || ydata == "" || yref == null || yref == "") {
+    let file = document.forms["form"]["file"].value;
+    let name = document.forms["form"]["table-name"].value;
+    let ydata = document.forms["form"]["year-data"].value;
+    let yref = document.forms["form"]["year-ref"].value;
+    if (file == null || name == null || name === "" || ydata == null || ydata === "" || yref == null || yref === "") {
         return Boolean(false);
     }
     return Boolean(true);
@@ -71,27 +71,33 @@ async function submitImportForm(event) {
     const info = JSON.parse(JSON.stringify(json));
     progress.width("70%");
 
-    // TODO : à optimiser / faire une fonction à part
-    var msg = "";
+    // TODO : faire une fonction à part
+    let msg = "";
 
-    if (info === "err_ext") {
-        var filepath = document.getElementById("inputImportFile").value;
-        var fileName = filepath.replace(/^.*?([^\\\/]*)$/, '$1');
-        msg = "L'extension du fichier \"" + fileName + "\" n'est pas supportée.";
+    if (info === "err_ext" || info === "err_empty" || info === "err_com") {
+        let filepath = document.getElementById("inputImportFile").value;
+        let fileName = filepath.replace(/^.*?([^\\\/]*)$/, '$1');
+        if (info === "err_ext") {
+            msg = "L'extension du fichier \"" + fileName + "\" n'est pas supportée.";
+        } else if (info === "err_empty") {
+            msg = "Le fichier \"" + fileName + "\" est vide.";
+        } else {
+            msg = "Colonne avec les codes INSEE introuvable.\nAjoutez une colonne \"com\" avec les codes ou renommez la colonne correspondante.";
+        }
         window.alert(msg);
         document.getElementById("inputImportFile").value = "";
         progress.css("visibility", "hidden");
         return;
     } else if (info === "err_name") {
-        var tableName = document.getElementById("table-name").value;
+        let tableName = document.getElementById("table-name").value;
         msg = "Le nom \"" + tableName + "\" est déjà utilisé."
         window.alert(msg);
         document.getElementById("table-name").value = "";
         progress.css("visibility", "hidden");
         return;
     } else if (info === "err_yearref") {
-        var yearRef = document.getElementById("year-ref").value;
-        var currentYear = new Date().getFullYear().toString().substr(-2);
+        let yearRef = document.getElementById("year-ref").value;
+        let currentYear = new Date().getFullYear().toString().substr(-2);
         msg = "L'année 20" + yearRef + " est incorrecte.\nEntrez une année inférieure ou égale à 20" + currentYear + ".";
         window.alert(msg);
         document.getElementById("year-ref").value = currentYear;
@@ -141,7 +147,7 @@ importForm.addEventListener("submit", submitImportForm);
 // Nettoyage des données du tableau (à faire avant l'envoi au serveur)
 function cleanData(data_unclean) {
     // Compte le nombre de colonne avec une en-tête
-    var nb_columns = 0;
+    let nb_columns = 0;
     const first_line = data_unclean[0];
     const data_size = data_unclean.length
 
@@ -154,7 +160,7 @@ function cleanData(data_unclean) {
 
     // TODO : nettoyage data pour export : peut être possible de le faire en une seule fonction
     // Récupération des colonnes comprisent entre 0 et le nombre de colonne avec une en-tête
-    var content_good_columns = [];
+    let content_good_columns = [];
 
     for (let i = 0; i < data_size; i++) {
         content_good_columns[i] = data_unclean[i].slice(0, nb_columns);
@@ -162,10 +168,10 @@ function cleanData(data_unclean) {
 
     // Récupération des lignes avec du contenu
     // S'arrête lorsqu'une ligne est vide
-    var clean_content = []
+    let clean_content = []
 
     for (let i = 0; i < data_size; i++) {
-        var liste_avec_elt = Boolean(false);
+        let liste_avec_elt = Boolean(false);
         for (let j = 0; j < content_good_columns[i].length; j++) {
             if (content_good_columns[i][j] != null) {
                 liste_avec_elt = Boolean(true);
@@ -182,8 +188,8 @@ function cleanData(data_unclean) {
 
 // Fonction permettant de télécharger un fichier CSV
 function downloadFile(fileName, csv) {
-    var encodedUri = encodeURI(csv); // Transformation des caractères spéciaux par leur version encodé en UTF-8
-    var link = document.createElement("a"); // Création d'un nouveau lien qui lancera le téléchargement
+    let encodedUri = encodeURI(csv); // Transformation des caractères spéciaux par leur version encodé en UTF-8
+    let link = document.createElement("a"); // Création d'un nouveau lien qui lancera le téléchargement
 
     link.setAttribute("href", encodedUri); // Ajout du contenu du fichier
     link.setAttribute("download", fileName); // Fonction du lien : télécharger un fichier "fileName"
