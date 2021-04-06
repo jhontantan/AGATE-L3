@@ -71,11 +71,39 @@ async function submitImportForm(event) {
     const info = JSON.parse(JSON.stringify(json));
     progress.width("70%");
 
+    // TODO : à optimiser / faire une fonction à part
+    var msg = "";
+
+    if (info === "err_ext") {
+        var filepath = document.getElementById("inputImportFile").value;
+        var fileName = filepath.replace(/^.*?([^\\\/]*)$/, '$1');
+        msg = "L'extension du fichier \"" + fileName + "\" n'est pas supportée.";
+        window.alert(msg);
+        document.getElementById("inputImportFile").value = "";
+        progress.css("visibility", "hidden");
+        return;
+    } else if (info === "err_name") {
+        var tableName = document.getElementById("table-name").value;
+        msg = "Le nom \"" + tableName + "\" est déjà utilisé."
+        window.alert(msg);
+        document.getElementById("table-name").value = "";
+        progress.css("visibility", "hidden");
+        return;
+    } else if (info === "err_yearref") {
+        var yearRef = document.getElementById("year-ref").value;
+        var currentYear = new Date().getFullYear().toString().substr(-2);
+        msg = "L'année 20" + yearRef + " est incorrecte.\nEntrez une année inférieure ou égale à 20" + currentYear + ".";
+        window.alert(msg);
+        document.getElementById("year-ref").value = currentYear;
+        progress.css("visibility", "hidden");
+        return;
+    }
+
     let results = [];
     const headers = Object.keys(info); // Récupération des noms de colonnes
     const nbLines = Object.values(info[headers[0]]).length; // Récupération du nombre de lignes
 
-    results.push(headers)
+    results.push(headers);
     progress.width("85%");
 
     // Réordonne le tableau du serveur pour coller au format de Handsontable

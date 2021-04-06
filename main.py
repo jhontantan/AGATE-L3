@@ -5,10 +5,10 @@ from io import BytesIO
 
 import pandas as pd
 import sqlalchemy as sqla
+import json
 
 from flask import Flask, render_template, request, redirect, url_for, send_file
-from flask import flash
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exc
 from flask_mail import Mail, Message
 from config import Config
 
@@ -76,8 +76,6 @@ def upload_file():
     # Traitement du fichier
     uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
 
-    df_import = pd.DataFrame()
-
     # Le traitement varie en fonction de l'extension (CSV, XLSX et ODS supportés)
     if filename[-3:] == "csv":
         df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
@@ -89,13 +87,13 @@ def upload_file():
         df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
                                   dtype={"com": "string"}, engine="odf")
     else:
-        flash('Type de fichier non reconnu', 'danger')
+        return json.dumps("err_ext")
 
     # Les informations sont liés à un référentiel géographique et importés en base de données
-    data: pd.DataFrame = lien_ref_geo(df_import, tableName, yearRef, yearData, operation, commentaire)
+    data_json = lien_ref_geo(df_import, tableName, yearRef, yearData, operation, commentaire)
 
     # Les informations traitées sont renvoyés à l'affichage sous format JSON
-    return data.to_json()
+    return data_json
 
 
 # LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
@@ -112,10 +110,14 @@ def lien_ref_geo(dfImport, tableName, yearRef, yearData, operation, commentaire)
     conn = engine.connect()
 
     # Jointure
-    jointure = pd.read_sql(chaine, conn)
-    dfRes = jointure.set_index(COM_JOINTURE).join(dfImport.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    try :
+        jointure = pd.read_sql(chaine, conn)
+    except sqla.exc.ProgrammingError:
+        print("\nUne erreur est survenue lors de la jointure")
+        return json.dumps("err_yearref")
 
     # Suppression COM_JOINTURE du dataframe
+    dfRes = jointure.set_index(COM_JOINTURE).join(dfImport.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
     dfRes = dfRes.reset_index()
     dfRes = dfRes.drop(columns=[COM_JOINTURE])
 
@@ -123,20 +125,20 @@ def lien_ref_geo(dfImport, tableName, yearRef, yearData, operation, commentaire)
     groupby = ["com" + yearRef, "libcom" + yearRef, "cco" + yearRef, "libcco" + yearRef] + CHAMPS_JOINTURE
 
     # Type de GroupBy
-    if (operation == "somme"):
+    if operation == "somme":
         dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).sum()
-    elif (operation == "max"):
+    elif operation == "max":
         dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).max()
-    elif (operation == "min"):
+    elif operation == "min":
         dfRes = dfRes.groupby(by=groupby, dropna=False, as_index=False).min()
-    else:
-        flash("Veuillez indiquer l'opération que vous souhaitez executer : Somme / Max / Min",
-              'danger')  # TODO : à remplacer par un feedback au front
 
     # Mise en base
-    mise_en_base(tableName, dfRes)
+    result = mise_en_base(tableName, dfRes)
 
-    return dfRes
+    if result == 1:
+        return json.dumps("err_name")
+
+    return dfRes.to_json()
 
 
 # AJOUT D'UNE NOUVELLE TABLE DANS LA BASE DE DONNEES
@@ -148,15 +150,18 @@ def mise_en_base(tableName, dataframe):
     dataframe_types = get_types(dataframe)
 
     try:
-        dataframe.to_sql((tableName), conn, if_exists='fail', index=False, dtype=dataframe_types)
+        dataframe.to_sql(tableName, conn, if_exists='fail', index=False, dtype=dataframe_types)
     except ValueError as vx:
-        flash('Une table de ce nom existe déja', 'danger')  # TODO : à remplacer par un feedback au front
+        print("nom en double")
+        return 1
     except Exception as ex:
         print(ex)
     else:
-        flash('La mise en base a été réalisée avec succes ', 'success')  # TODO : à remplacer par un feedback au front
+        print('La mise en base a été réalisée avec succes ')  # TODO : à remplacer par un feedback au front
     finally:
         conn.close()
+
+    return 0
 
 
 # TODO : get_types amélioration
