@@ -67,6 +67,19 @@ header {
     vertical-align: top;
 }
 
+#btn-connexion {
+    background-color: #313E47 !important;
+    margin: 0 !important;
+    text-transform: uppercase;
+    color: #FFFFFF;
+    font-size: 0.9vw !important;
+    border: none !important;
+    width: 125%;
+    height: auto;
+    vertical-align: top;
+    text-align: right;
+}
+
 #btn-submit {
     text-transform: capitalize !important;
     width: auto !important;
