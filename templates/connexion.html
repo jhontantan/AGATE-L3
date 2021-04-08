@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+    <form method="POST" action="/connexion" class="row  align-items-center">
+        <div class="login-form">
+                <h4 class="text-center">Connexion</h4>
+
+                <div class="col-md-12">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required="required">
+                </div>
+                <div class="col-md-4">
+                    <input type="submit" class="btn btn-primary" id="btn-submit" value="Connexion">
+                </div>
+
+
+        </div>
+    </form>
+
+{% endblock %}
+

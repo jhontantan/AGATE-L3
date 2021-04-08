@@ -1,9 +1,10 @@
 import os
 import pandas as pd
 import sqlalchemy as sqla
+from flask import Flask, render_template, request, send_file,redirect,url_for
+from flask import flash
 import json
 
-from flask import Flask, render_template, request, send_file
 from flask_mail import Mail, Message
 from sqlalchemy import create_engine, exc
 from threading import Thread
@@ -43,7 +44,23 @@ engine = create_engine(
     ('postgresql+psycopg2://' + DB_USER + ':' + DB_PASS + '@' + DB_HOST + ':' + DB_PORT + '/' + DB_NAME),
     pool_recycle=3600)
 
+# ---------- Connexion Admin ------- #
 
+
+class User:
+    def __init__(self, password):
+        self.id = 1
+        self.username = 'admin'
+        self.password = password
+
+    def __repr__(self):
+        return f'<User: {self.password}>'
+
+
+user = []
+user.append(User(password='agate73000'))
+
+# @Routes
 # INDEX DU SITE WEB
 @app.route('/')
 def index():
@@ -54,6 +71,30 @@ def index():
 @app.route('/404')
 def page_not_found():
     return render_template('404.html')
+
+
+@app.route('/admin')
+def admin_menu():
+    return render_template('admin.html')
+
+
+@app.route('/logout')
+def logout():
+    #logout_user()
+    flash('Vous êtes déconnecté')
+    return render_template('index')
+
+
+@app.route('/connexion', methods=['GET', 'POST'])
+def connexion():
+    if request.method == 'POST':
+        password = request.form.get('password')
+
+        if user[0].password == password:
+            return redirect(url_for('admin_menu'))
+        else:
+            flash('error', 'danger')
+    return render_template('connexion.html')
 
 
 # -------------------
