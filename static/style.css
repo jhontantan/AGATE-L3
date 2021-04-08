@@ -55,7 +55,7 @@ header {
     padding-left: 0 !important;
 }
 
-#btn-export, #btn-import, #btn-update, #btn-submit {
+#btn-export, #btn-import, #btn-update, #btn-submit, #btn-logOut {
     background-color: #313E47 !important;
     margin: 0 !important;
     text-transform: uppercase;
@@ -77,7 +77,7 @@ header {
     width: 125%;
     height: auto;
     vertical-align: top;
-    text-align: right;
+    text-align: center;
 }
 
 #btn-submit {
@@ -85,7 +85,7 @@ header {
     width: auto !important;
 }
 
-#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover {
+#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover,#btn-connexion:hover, #btn-logOut :hover {
     background-color: #577B94 !important;
 }
 
@@ -134,4 +134,3 @@ footer div a:hover {
     color : #577B94;
 }
 
-/*-------- Pour la page de connexion --------*/
