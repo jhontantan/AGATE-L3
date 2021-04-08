@@ -22,6 +22,7 @@ DB_PASS = "user"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
+CHAMPS_JOINTURE_DEPENDANT_ANNEE = ['com', 'libcom', 'cco', 'libcco']
 CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libdep', 'reg', 'libreg']
 NOM_TABLE_REFGEO = 'v_passage'
 
@@ -103,10 +104,10 @@ def lien_ref_geo(df_import, table_name, year_ref, year_data, operation, commenta
 
     # Récupération v_passage
     champs_jointure = list_to_str(CHAMPS_JOINTURE)
+    champs_jointure_dependant_annee = list_with_year_to_str(CHAMPS_JOINTURE_DEPENDANT_ANNEE,year_ref)
 
-    chaine = 'SELECT ' + COM_JOINTURE + ', com' + year_ref + ', libcom' + year_ref + ', cco' + year_ref + ', libcco' + \
-             year_ref + ', ' + champs_jointure + ' FROM ' + NOM_TABLE_REFGEO
-
+    chaine = 'SELECT ' + COM_JOINTURE + ', ' + champs_jointure_dependant_annee + ', ' + champs_jointure + ' FROM ' + NOM_TABLE_REFGEO
+    print(chaine)
     conn = engine.connect()
 
     # Jointure
@@ -133,7 +134,9 @@ def lien_ref_geo(df_import, table_name, year_ref, year_data, operation, commenta
     df_res = df_res.drop(columns=[COM_JOINTURE])
 
     # GroupBy
-    groupby = ["com" + year_ref, "libcom" + year_ref, "cco" + year_ref, "libcco" + year_ref] + CHAMPS_JOINTURE
+    tab_champs_jointure_dependant_annee = list_with_year_to_list_with_choosen_year(CHAMPS_JOINTURE_DEPENDANT_ANNEE,year_ref)
+    groupby = tab_champs_jointure_dependant_annee + CHAMPS_JOINTURE
+
 
     # Type de GroupBy
     if operation == "somme":
@@ -199,6 +202,20 @@ def list_to_str(liste):
             string = string + liste[i] + ', '
     return string
 
+def list_with_year_to_str(liste,year):
+    string = ""
+    for i in range(len(liste)):
+        if i == (len(liste) - 1):
+            string = string  + liste[i] + str(year)
+        else:
+            string = string + liste[i] + str(year) + ', '
+    return string
+
+def list_with_year_to_list_with_choosen_year(liste, year):
+    res = []
+    for i in range(len(liste)):
+        res.append(liste[i] + year)
+    return res
 
 # -------------------
 # EXPORTER UN FICHIER
@@ -223,6 +240,7 @@ def download_file():
 
     # Conversion du dataframe en CSV et renvoie à l'affichage pour le téléchargement
     df_export.to_csv('export.csv', sep=";", index=False)
+    send_email()
 
     return send_file('export.csv',
                      mimetype='text/csv',
@@ -247,9 +265,8 @@ def cleanTempDirectory():
 # ---------------------------
 # ENVOI AUTOMATIQUE D'UN MAIL
 # ---------------------------
-@app.route('/send')
 def send_email():
-    msg = Message('Outil Agate - Traitement : [ajouter nom table]', recipients=MAIL_ADRESSES_DEST)
+    msg = Message('Outil Agate - Traitement : Nouveau Fichier exporté', recipients=MAIL_ADRESSES_DEST)
     msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
     with app.open_resource("export.csv") as fp:
         msg.attach("export.csv", "text/csv", fp.read())
