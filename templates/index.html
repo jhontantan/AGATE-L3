@@ -1,147 +1,146 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    {{ super() }}
-    <!-- CSS de la librairie Handsontable (tableau) -->
-    <link href="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.css" rel="stylesheet"
-          media="screen">
+{{ super() }}
+<!-- CSS de la librairie Handsontable (tableau) -->
+<link href="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.css" rel="stylesheet"
+      media="screen">
 {% endblock %}
 
 {% block content %}
-    <div id="main-bloc">
-        <div class="btn-toolbar" role="toolbar" aria-label="Utilitary buttons">
-            <div class="col-1">
-                <!-- Bouton d'import -->
-                <button id="btn-import" class="btn btn-primary" type="button" data-toggle="modal"
-                        data-target="#import-modal">Import
-                </button>
-            </div>
-            <div class="col-space"></div>
-            <div class="col-1">
-                <!-- Bouton d'export -->
-                <button id="btn-export" name="b_export" type="button" class="btn btn-secondary">
-                    Export
-                </button>
-            </div>
-        </div>
-
-        <!-- Barre de chargement -->
-        <div class="progress">
-            <div id="import-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%"></div>
-        </div>
-        <div class="col-space"></div>
-
-
+<div id="main-bloc">
+    <div class="btn-toolbar" role="toolbar" aria-label="Utilitary buttons">
         <div class="col-1">
-            <a href="connexion" >
-                 <button id="btn-connexion" name="connexion" type="button" class="btn btn-secondary">
-                    Connexion
-                 </button>
-             </a>
-        </div>
-        {#
-        <div class="col-space"></div>
-        #}
-        {#
-        <div class="col-1">#}
-            {#
-            <button id="btn-update" type="button" onclick="window.location.href = 'update';" #}
-                    {# class="btn btn-secondary">Update#}
-                {#
+            <!-- Bouton d'import -->
+            <button id="btn-import" class="btn btn-primary" type="button" data-toggle="modal"
+                    data-target="#import-modal">Import
             </button>
-            #}
-            {#
         </div>
-        #}
+        <div class="col-space"></div>
+        <div class="col-1">
+            <!-- Bouton d'export -->
+            <button id="btn-export" name="b_export" type="button" class="btn btn-secondary">
+                Export
+            </button>
+        </div>
+        <div class="col-space"></div>
+        <div class="col-1">
+            <a href="connexion">
+                <button id="btn-connexion" name="connexion" type="button" class="btn btn-secondary">
+                    Connexion
+                </button>
+            </a>
+        </div>
     </div>
 
-        <!-- Pop up pour importer un fichier -->
-        <div class="modal fade" id="import-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <form method="POST" action="import" id="import-form" name="form" enctype="multipart/form-data">
-                        <div class="modal-header">
-                            <!-- Titre de la pop up -->
-                            <h5 class="modal-title" id="exampleModalLabel">Importer un fichier</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <!-- Champs d'import d'un fichier -->
-                            <p>
-                                <input type="file" accept=".csv,.xlsx,.ods" class="form-control form-control-sm"
-                                       name="file"
-                                       required id="inputImportFile">
-                            </p>
-                            <!-- Champs du nom de la table -->
-                            <p>
-                                <label for="table-name">Nom de la table : </label>
-                                <input type="text" id="table-name" name="table-name" required minlength="3" size="37">
-                            </p>
-                            <!-- Champs de l'année des données -->
-                            <p>
-                                <label for="year-data">Année des données : </label>
-                                <input id="year-data" min="00" value="21" max="99" required type="number"
-                                       name="year-data">
-                            </p>
-                            <!-- Champs de l'année du référentiel -->
-                            <p>
-                                <label for="year-ref">Année du référentiel : </label>
-                                <input id="year-ref" min="00" value="21" max="99" required type="number"
-                                       name="year-ref">
-                            </p>
-                            <!-- Menu déroulant pour sélectionner un opérateur (somme, max, min) -->
-                            <p>
-                                <label for="drp_dwn_op">Opération :</label>
-                                <select name="operation" id="drp_dwn_op">
-                                    <option value="somme" selected>somme</option>
-                                    <option value="max">max</option>
-                                    <option value="min">min</option>
-                                </select>
-                            </p>
-                            <!-- Menu déroulant pour sélectionner un séparateur (";", ",") -->
-                            <p>
-                                <label for="drp_dwn_sep">Séparateur : </label>
-                                <select name="separateur" id="drp_dwn_sep">
-                                    <option value=";" selected>;</option>
-                                    <option value=",">,</option>
-                                </select>
-                            </p>
-                            <!-- Champs pour ajouter un commentaire (optionnel) -->
-                            <p>
-                                <label for="commentaire">Commentaire : </label>
-                                <textarea rows="5" cols="55" name="commentaire" id="commentaire"></textarea>
-                            </p>
-                        </div>
-                        <div class="modal-footer">
-                            <!-- Bouton pour fermer la pop up -->
-                            <button type="button" class="btn btn-secondary" id="btn-close-modal" data-dismiss="modal">
-                                Fermer
-                            </button>
-                            <!-- Bouton pour soumettre le formulaire -->
-                            <button type="submit" id="btn-submit" class="btn btn-primary">Charger</button>
-                        </div>
-                    </form>
+    <!-- Barre de chargement -->
+    <div class="progress">
+        <div id="import-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%"></div>
+    </div>
+    <div class="col-space"></div>
+    {#
+    <div class="col-space"></div>
+    #}
+    {#
+    <div class="col-1">#}
+        {#
+        <button id="btn-update" type="button" onclick="window.location.href = 'update';" #}
+                {# class="btn btn-secondary">Update#}
+            {#
+        </button>
+        #}
+        {#
+    </div>
+    #}
+</div>
+
+<!-- Pop up pour importer un fichier -->
+<div class="modal fade" id="import-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" action="import" id="import-form" name="form" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <!-- Titre de la pop up -->
+                    <h5 class="modal-title" id="exampleModalLabel">Importer un fichier</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-            </div>
-        </div>
-        <!-- Tableau (Handsontable) -->
-        <div id="sheet-area">
-            <div id="tableau"></div>
+                <div class="modal-body">
+                    <!-- Champs d'import d'un fichier -->
+                    <p>
+                        <input type="file" accept=".csv,.xlsx,.ods" class="form-control form-control-sm"
+                               name="file"
+                               required id="inputImportFile">
+                    </p>
+                    <!-- Champs du nom de la table -->
+                    <p>
+                        <label for="table-name">Nom de la table : </label>
+                        <input type="text" id="table-name" name="table-name" required minlength="3" size="37">
+                    </p>
+                    <!-- Champs de l'année des données -->
+                    <p>
+                        <label for="year-data">Année des données : </label>
+                        <input id="year-data" min="00" value="21" max="99" required type="number"
+                               name="year-data">
+                    </p>
+                    <!-- Champs de l'année du référentiel -->
+                    <p>
+                        <label for="year-ref">Année du référentiel : </label>
+                        <input id="year-ref" min="00" value="21" max="99" required type="number"
+                               name="year-ref">
+                    </p>
+                    <!-- Menu déroulant pour sélectionner un opérateur (somme, max, min) -->
+                    <p>
+                        <label for="drp_dwn_op">Opération :</label>
+                        <select name="operation" id="drp_dwn_op">
+                            <option value="somme" selected>somme</option>
+                            <option value="max">max</option>
+                            <option value="min">min</option>
+                        </select>
+                    </p>
+                    <!-- Menu déroulant pour sélectionner un séparateur (";", ",") -->
+                    <p>
+                        <label for="drp_dwn_sep">Séparateur : </label>
+                        <select name="separateur" id="drp_dwn_sep">
+                            <option value=";" selected>;</option>
+                            <option value=",">,</option>
+                        </select>
+                    </p>
+                    <!-- Champs pour ajouter un commentaire (optionnel) -->
+                    <p>
+                        <label for="commentaire">Commentaire : </label>
+                        <textarea rows="5" cols="55" name="commentaire" id="commentaire"></textarea>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <!-- Bouton pour fermer la pop up -->
+                    <button type="button" class="btn btn-secondary" id="btn-close-modal" data-dismiss="modal">
+                        Fermer
+                    </button>
+                    <!-- Bouton pour soumettre le formulaire -->
+                    <button type="submit" id="btn-submit" class="btn btn-primary">Charger</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+<!-- Tableau (Handsontable) -->
+<div id="sheet-area">
+    <div id="tableau"></div>
+</div>
+</div>
 {% endblock %}
 
 {% block js %}
-    {{ super() }}
-    <!-- JS de la librairie Handsontable (tableau) -->
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.js"></script>
-    <script type="text/javascript"
-            src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/languages/fr-FR.js"></script>
-    <!-- JS de l'API pour lier l'affichage au serveur -->
-    <script src="/static/index_script.js"></script>
+{{ super() }}
+<!-- JS de la librairie Handsontable (tableau) -->
+<script src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/handsontable.full.min.js"></script>
+<script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/handsontable@8.3.0/dist/languages/fr-FR.js"></script>
+<!-- JS de l'API pour lier l'affichage au serveur -->
+<script src="/static/index_script.js"></script>
 {% endblock %}
 
