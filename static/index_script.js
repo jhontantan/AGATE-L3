@@ -37,6 +37,43 @@ function clearFields() {
     return Boolean(true);
 }
 
+// Vérification des erreurs potentielles suite au traitement du fichier par le serveur
+function gestionErreurs(info, progress) {
+    let msg = "";
+
+    if (info === "err_ext" || info === "err_empty" || info === "err_com") {
+        let filepath = document.getElementById("inputImportFile").value;
+        let fileName = filepath.replace(/^.*?([^\\\/]*)$/, '$1');
+        if (info === "err_ext") {
+            msg = "L'extension du fichier \"" + fileName + "\" n'est pas supportée.";
+        } else if (info === "err_empty") {
+            msg = "Le fichier \"" + fileName + "\" est vide.";
+        } else {
+            msg = "Colonne avec les codes INSEE introuvable.\nAjoutez une colonne \"com\" avec les codes ou renommez la colonne correspondante.";
+        }
+        window.alert(msg);
+        document.getElementById("inputImportFile").value = "";
+        progress.css("visibility", "hidden");
+        return -1;
+    } else if (info === "err_name") {
+        let tableName = document.getElementById("table-name").value;
+        msg = "Le nom \"" + tableName + "\" est déjà utilisé."
+        window.alert(msg);
+        document.getElementById("table-name").value = "";
+        progress.css("visibility", "hidden");
+        return -1;
+    } else if (info === "err_yearref") {
+        let yearRef = document.getElementById("year-ref").value;
+        let currentYear = new Date().getFullYear().toString().substr(-2);
+        msg = "L'année 20" + yearRef + " est incorrecte.\nEntrez une année inférieure ou égale à l'année courante.";
+        window.alert(msg);
+        document.getElementById("year-ref").value = currentYear;
+        progress.css("visibility", "hidden");
+        return -1;
+    }
+    return 1;
+}
+
 // Fonction appelée à la soumission du formulaire d'import
 async function submitImportForm(event) {
     event.preventDefault(); // Empêche le navigateur de recharger la page
@@ -66,42 +103,18 @@ async function submitImportForm(event) {
     });
     progress.width("60%");
 
+    console.log("Reponse:");
+    console.log(response);
+
     // Récupération du contenu du formulaire après le lien avec le refgéo et l'import dans la base de données
     const json = await response.json();
+    console.log("JSON:");
+    console.log(json);
     const info = JSON.parse(JSON.stringify(json));
     progress.width("70%");
 
-    // TODO : faire une fonction à part
-    let msg = "";
-
-    if (info === "err_ext" || info === "err_empty" || info === "err_com") {
-        let filepath = document.getElementById("inputImportFile").value;
-        let fileName = filepath.replace(/^.*?([^\\\/]*)$/, '$1');
-        if (info === "err_ext") {
-            msg = "L'extension du fichier \"" + fileName + "\" n'est pas supportée.";
-        } else if (info === "err_empty") {
-            msg = "Le fichier \"" + fileName + "\" est vide.";
-        } else {
-            msg = "Colonne avec les codes INSEE introuvable.\nAjoutez une colonne \"com\" avec les codes ou renommez la colonne correspondante.";
-        }
-        window.alert(msg);
-        document.getElementById("inputImportFile").value = "";
-        progress.css("visibility", "hidden");
-        return;
-    } else if (info === "err_name") {
-        let tableName = document.getElementById("table-name").value;
-        msg = "Le nom \"" + tableName + "\" est déjà utilisé."
-        window.alert(msg);
-        document.getElementById("table-name").value = "";
-        progress.css("visibility", "hidden");
-        return;
-    } else if (info === "err_yearref") {
-        let yearRef = document.getElementById("year-ref").value;
-        let currentYear = new Date().getFullYear().toString().substr(-2);
-        msg = "L'année 20" + yearRef + " est incorrecte.\nEntrez une année inférieure ou égale à 20" + currentYear + ".";
-        window.alert(msg);
-        document.getElementById("year-ref").value = currentYear;
-        progress.css("visibility", "hidden");
+    let info_ok = gestionErreurs(info, progress);
+    if (info_ok === -1) {
         return;
     }
 

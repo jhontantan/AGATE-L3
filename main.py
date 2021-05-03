@@ -1,37 +1,36 @@
 import os
-
 import pandas as pd
 import sqlalchemy as sqla
 import json
 
-from flask import Flask, render_template, request, send_file
-from sqlalchemy import create_engine, exc
+from flask import Flask, render_template, request, send_file, redirect, url_for, session
+from flask import flash
 from flask_mail import Mail, Message
+from sqlalchemy import create_engine, exc
 from config import Config
 
-# PREREQUIS
+# ---------- Informations ---------- #
+# Prérequis
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
 
-# BASE DE DONNEES
+# Database
 DB_HOST = "127.0.0.1"
-DB_PORT = "5432"
+DB_PORT = "3306"
 DB_NAME = "agate"
 DB_USER = "postgres"
-DB_PASS = "root"
+DB_PASS = "2z7i2ReXP"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
 CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libdep', 'reg', 'libreg']
 NOM_TABLE_REFGEO = 'v_passage'
 
-# ADRESSE MAIL
+# Mail
 MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']  # geomatique@agate-territoires.fr
+# ---------------------------------- #
 
-# --------------- #
-# LANCEMENT FLASK
-# --------------- #
-
+# ----- Lancement de l'app ----- #
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
@@ -43,16 +42,56 @@ engine = create_engine(
     pool_recycle=3600)
 
 
-# INDEX DU SITE WEB
+# ---------- Connexion Admin ------- #
+
+class User:
+    def __init__(self, password):
+        self.id = 1
+        self.username = 'admin'
+        self.password = password
+
+    def __repr__(self):
+        return f'<User: {self.password}>'
+
+
+user = [User(password='agate73000')]
+
+
+# @Routes
 @app.route('/')
 def index():
     return render_template('index.html', title='Outil Agate')
 
 
-# PAGE 404
 @app.route('/404')
 def page_not_found():
     return render_template('404.html')
+
+
+@app.route('/admin')
+def admin_menu():
+    if 'username' in session:
+        return render_template('admin.html')
+    return redirect(url_for('index'))
+
+
+@app.route('/logout')
+def logout():
+    flash('Vous êtes déconnecté')
+    session.pop('username', None)
+    return redirect(url_for('index'))
+
+
+@app.route('/connexion', methods=['GET', 'POST'])
+def connexion():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if user[0].password == password:
+            session['username'] = user[0].username
+            return redirect(url_for('admin_menu'))
+        else:
+            flash('error', 'danger')
+    return render_template('connexion.html')
 
 
 # -------------------
@@ -156,12 +195,12 @@ def mise_en_base(table_name, dataframe):
     try:
         dataframe.to_sql(table_name, conn, if_exists='fail', index=False, dtype=dataframe_types)
     except ValueError:
-        print("nom en double")
+        # print("nom en double")
         return 1
     except Exception as ex:
-        print(ex)
+        print(ex)  # TODO : à remplacer par un feedback au front
     else:
-        print('La mise en base a été réalisée avec succes ')  # TODO : à remplacer par un feedback au front
+        print('La mise en base a été réalisée avec succes ')
     finally:
         conn.close()
 
@@ -184,13 +223,13 @@ def get_types(dfparam):
 
 # prend une liste de strings et retourne la concat de cette liste avec des ','
 def list_to_str(liste):
-    string = ""
+    str = ""
     for i in range(len(liste)):
         if i == (len(liste) - 1):
-            string = string + liste[i]
+            str = str + liste[i]
         else:
-            string = string + liste[i] + ', '
-    return string
+            str = str + liste[i] + ', '
+    return str
 
 
 # -------------------
@@ -237,6 +276,7 @@ def cleanTempDirectory():
                 pass
 
 
+
 # ---------------------------
 # ENVOI AUTOMATIQUE D'UN MAIL
 # ---------------------------
@@ -250,3 +290,8 @@ def send():
 
     mail.send(msg)
     return "Mail envoyé"
+
+
+#serveur
+# if __name__ == "__main__":
+#   app.run(host='0.0.0.0',port=1060)
