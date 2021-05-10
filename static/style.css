@@ -42,7 +42,7 @@ header {
     padding-left: 0 !important;
 }
 
-#btn-export, #btn-import, #btn-update, #btn-submit, #btn-logOut {
+#btn-export, #btn-import, #btn-update, #btn-submit, #btn-op-submit, #btn-logOut {
     background-color: #313E47 !important;
     margin: 0 !important;
     text-transform: uppercase;
@@ -67,18 +67,36 @@ header {
     text-align: center;
 }
 
-#btn-submit {
+#btn-submit, #btn-op-submit {
     text-transform: capitalize !important;
     width: auto !important;
 }
 
-#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover,#btn-connexion:hover, #btn-logOut :hover {
+#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover, #btn-op-submit:hover, #btn-connexion:hover, #btn-logOut :hover {
     background-color: #577B94 !important;
 }
 
 /*-- Champs import de fichier --*/
+#operation-content {
+    /*width: 600px;*/
+}
+.modal-body {
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}
+
 #inputImportFile {
     font-size: 0.9vw !important;
+}
+
+#list-op {
+    list-style-type: circle;
+    padding-right: 20%;
+    /*display: table !important;*/
+}
+
+#list-op li select {
+    float: right;
 }
 
 /*-- Barre de chargement --*/

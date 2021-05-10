@@ -63,7 +63,7 @@
                     <!-- Champs du nom de la table -->
                     <p>
                         <label for="table-name">Nom de la table : </label>
-                        <input type="text" id="table-name" name="table-name" required minlength="3" size="37">
+                        <input type="text" id="table-name" name="table-name" required minlength="3" size="35">
                     </p>
                     <!-- Champs de l'année du référentiel -->
                     <p>
@@ -111,21 +111,20 @@
 <div class="modal fade" id="operation-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="modal-content" id="operation-content">
             <form method="POST" action="import" id="operation-form" name="operation-form" enctype="multipart/form-data">
                 <div class="modal-header">
                     <!-- Titre de la pop up -->
                     <h5 class="modal-title" id="title_operation_modal_id">Sélectionnez les opérations par colonnes</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="cross-select-modal">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <!-- TODO : Com à choisir -->
-                    <div id="com-select">
-                        <p>Sélection de la colonne "Com" : </p>
-                        <span>Com : </span>
-                    </div>
+                    <p>Sélection de la colonne avec les codes INSEE : </p>
+                    <span>Codes INSEE : </span>
+                    <span id="com-select"></span>
                     <hr/>
                     <!-- TODO : Liste des noms de colonnes + choix des opérateurs-->
                     <p>Sélection des opérateurs par colonne : </p>
