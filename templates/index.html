@@ -45,8 +45,8 @@
      aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form method="POST" action="import" id="import-form" name="form" enctype="multipart/form-data">
-                <div class="modal-header">
+            <form method="POST" action="import_operation" id="import-form" name="import-form" enctype="multipart/form-data">
+                <div class="modal-header"> <!-- TODO : remettre "import" en cas de pb -->
                     <!-- Titre de la pop up -->
                     <h5 class="modal-title" id="exampleModalLabel">Importer un fichier</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -65,16 +65,10 @@
                         <label for="table-name">Nom de la table : </label>
                         <input type="text" id="table-name" name="table-name" required minlength="3" size="37">
                     </p>
-                    <!-- Champs de l'année des données -->
-                    <p>
-                        <label for="year-data">Année des données : </label>
-                        <input id="year-data" min="00" value="21" max="99" required type="number"
-                               name="year-data">
-                    </p>
                     <!-- Champs de l'année du référentiel -->
                     <p>
                         <label for="year-ref">Année du référentiel : </label>
-                        <input id="year-ref" min="00" value="21" max="99" required type="number"
+                        <input id="year-ref" min="00" value="20" max="99" required type="number"
                                name="year-ref">
                     </p>
                     <!-- Menu déroulant pour sélectionner un opérateur (somme, max, min) -->
@@ -107,6 +101,43 @@
                     </button>
                     <!-- Bouton pour soumettre le formulaire -->
                     <button type="submit" id="btn-submit" class="btn btn-primary">Charger</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Pop up pour editer les opérations sur le fichier -->
+<div class="modal fade" id="operation-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" action="import" id="operation-form" name="operation-form" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <!-- Titre de la pop up -->
+                    <h5 class="modal-title" id="title_operation_modal_id">Sélectionnez les opérations par colonnes</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- TODO : Com à choisir -->
+                    <div id="com-select">
+                        <p>Sélection de la colonne "Com" : </p>
+                        <span>Com : </span>
+                    </div>
+                    <hr/>
+                    <!-- TODO : Liste des noms de colonnes + choix des opérateurs-->
+                    <p>Sélection des opérateurs par colonne : </p>
+                    <ul id="list-op"></ul>
+                </div>
+                <div class="modal-footer">
+                    <!-- Bouton pour fermer la pop up -->
+                    <button type="button" class="btn btn-secondary" id="btn-close-op-modal" data-dismiss="modal">
+                        Fermer
+                    </button>
+                    <!-- Bouton pour soumettre le formulaire -->
+                    <button type="submit" id="btn-op-submit" class="btn btn-primary">Charger</button>
                 </div>
             </form>
         </div>

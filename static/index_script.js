@@ -27,11 +27,10 @@ const hot = new Handsontable(container, {
 
 // Vérification que tous les champs requis sont remplis
 function clearFields() {
-    let file = document.forms["form"]["file"].value;
-    let name = document.forms["form"]["table-name"].value;
-    let ydata = document.forms["form"]["year-data"].value;
-    let yref = document.forms["form"]["year-ref"].value;
-    if (file == null || name == null || name === "" || ydata == null || ydata === "" || yref == null || yref === "") {
+    let file = document.forms["import-form"]["file"].value;
+    let name = document.forms["import-form"]["table-name"].value;
+    let yref = document.forms["import-form"]["year-ref"].value;
+    if (file == null || name == null || name === "" || yref == null || yref === "") {
         return Boolean(false);
     }
     return Boolean(true);
@@ -83,47 +82,123 @@ async function submitImportForm(event) {
         return;
     }
 
-    const progress = $("#import-progress"); // Récupération de la barre de progression
-    $("#import-modal").modal('hide'); // Ferme la pop up d'import
-
-    progress.width("0%");
-    $(".progress-bar").css("background-color", "#313E47"); // Colore la barre aux couleurs de l'import (#343E47)
-    progress.css("visibility", "visible");  // Affiche la barre
-    progress.width("10%");  // Commence le chargement de la barre
-
     const form = event.currentTarget;
     const url = form.action;
     const formData = new FormData(form);
-    progress.width("30%");
 
     // Envoi du contenu du formulaire au serveur
     const response = await fetch(url, {
         method: "POST",
         body: formData
     });
-    progress.width("60%");
 
-    console.log("Reponse:");
-    console.log(response);
+    $("#import-modal").modal('hide');
+    $("#operation-modal").modal('show');
 
     // Récupération du contenu du formulaire après le lien avec le refgéo et l'import dans la base de données
-    const json = await response.json();
-    console.log("JSON:");
-    console.log(json);
-    const info = JSON.parse(JSON.stringify(json));
-    progress.width("70%");
+    const resp = await response.json();
+    const info = JSON.parse(JSON.stringify(resp));
+    const headers = Object.keys(info); // Récupération des noms de colonnes
 
-    let info_ok = gestionErreurs(info, progress);
-    if (info_ok === -1) {
-        return;
+    let results = [];
+    results.push(headers);
+
+    // Génération du dropdown selection du com
+    let dropdown_com = await document.createElement("select");
+    dropdown_com.setAttribute("id", "col_com");
+    dropdown_com.setAttribute("name", "col_com");
+    for (let j = 0; j < results[0].length; j++) {
+        let option_com = await document.createElement("option");
+        option_com.value = results[0][j];
+        option_com.text = results[0][j];
+        dropdown_com.appendChild(option_com);
     }
+    document.getElementById("com-select").appendChild(dropdown_com);
+
+    // Génération de la liste de dropdowns des opérations
+    for (let i = 0; i < results[0].length; i++) {
+        let element = await document.createElement("li");
+        let header_name = await document.createTextNode(results[0][i]);
+        let dropdown = await document.createElement("select");
+        dropdown.setAttribute("id", "drpd_" + results[0][i]);
+        dropdown.setAttribute("name", "drpd_" + results[0][i]);
+
+        // Création des Options
+        let option_1 = await document.createElement("option");
+        option_1.value = "somme";
+        option_1.text = "somme";
+        let option_2 = await document.createElement("option");
+        option_2.value = "max";
+        option_2.text = "max";
+        let option_3 = await document.createElement("option");
+        option_3.value = "min";
+        option_3.text = "min";
+        // Selection de l'op par défaut
+        let main_operator = await document.forms['import-form'].elements['drp_dwn_op'].value;
+        switch (main_operator) {
+            case option_3.value:
+                option_3.selected = true;
+                break;
+            case option_2.value:
+                option_2.selected = true;
+                break;
+            default:
+                option_1.selected = true;
+                break;
+        }
+        dropdown.appendChild(option_1);
+        dropdown.appendChild(option_2);
+        dropdown.appendChild(option_3);
+        element.appendChild(header_name);
+        element.appendChild(dropdown);
+        document.getElementById("list-op").appendChild(element);
+    }
+}
+
+async function submitSelectForm(event) {
+    event.preventDefault(); // Empêche le navigateur de recharger la page
+
+    $("#operation-modal").modal('hide');
+
+    const form_select = event.currentTarget;
+    const formSelect = new FormData(form_select);
+
+    // Vide le champs fichier pour éviter de réimporter le fichier
+    let file = document.getElementById("inputImportFile");
+    const filename = file.value; // Récupère le nom du fichier pour le retrouver dans /temp
+    file.value = "";
+
+    const form_import = document.getElementById("import-form");
+    let importData = new FormData(form_import);
+
+    const url = form_select.action;
+
+    importData.append("filename", filename);
+    importData.delete('file');
+    importData.append("formSelect", formSelect);
+
+    for (let key of formSelect.entries()) {
+       importData.append(key[0], key[1]);
+    }
+
+    const response = await fetch(url, {
+        method: "POST",
+        body: importData
+    });
+
+    const json = await response.json();
+    const info = JSON.parse(JSON.stringify(json));
+
+    // let info_ok = gestionErreurs(info, progress);
+    // if (info_ok === -1) {
+    //     return;
+    // }
 
     let results = [];
     const headers = Object.keys(info); // Récupération des noms de colonnes
     const nbLines = Object.values(info[headers[0]]).length; // Récupération du nombre de lignes
 
     results.push(headers);
-    progress.width("85%");
 
     // Réordonne le tableau du serveur pour coller au format de Handsontable
     for (let i = 0; i < nbLines; i++) {
@@ -133,7 +208,6 @@ async function submitImportForm(event) {
         }
         results.push(resultLine);
     }
-    progress.width("100%");
 
     // Vide le formulaire de la pop up
     document.getElementById("import-form").reset();
@@ -142,17 +216,15 @@ async function submitImportForm(event) {
     hot.updateSettings({
         data: results,
     });
-
-    // Cache la barre de progression
-    setTimeout(function () {
-        progress.css("visibility", "hidden");
-    }, 500);
 }
 
 // Récupère le formulaire d'import dans l'HTML et ajoute un event listener
 // qui déclenche la fonction submitImportForm en cas de clic sur bouton
 const importForm = document.getElementById("import-form");
 importForm.addEventListener("submit", submitImportForm);
+
+const selectForm = document.getElementById("operation-form");
+selectForm.addEventListener("submit", submitSelectForm);
 
 
 /** ----- API (Export) ----- **/
@@ -253,3 +325,6 @@ async function exportToCSV(event) {
 // qui déclenche la fonction exportToCSV en cas de clic sur le bouton
 const exportBtn = document.getElementById("btn-export");
 exportBtn.addEventListener("click", exportToCSV);
+
+
+/** OPERATIONS */

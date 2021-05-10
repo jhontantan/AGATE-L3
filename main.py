@@ -18,7 +18,7 @@ from config import Config
 
 # Database
 DB_HOST = "127.0.0.1"
-DB_PORT = "3306"
+DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
 DB_PASS = "user"
@@ -101,12 +101,38 @@ def connexion():
 # -------------------
 # IMPORT D'UN FICHIER
 # -------------------
+@app.route('/import_operation', methods=['POST'])
+def get_operations():
+    uploaded_file = request.files['file']
+    filename = uploaded_file.filename
+    separator = request.form['separateur']
+
+    # Enregistrement du fichier en local
+    uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+
+    try:
+        if filename[-3:] == "csv":
+            df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
+                                    nrows=1)
+        elif filename[-4:] == "xlsx":
+            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
+                                      nrows=1, engine="openpyxl")
+        elif filename[-3:] == "ods":
+            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
+                                      nrows=1, engine="odf")
+        else:
+            return json.dumps("err_ext")
+    except pd.errors.EmptyDataError:
+        return json.dumps("err_empty")
+
+    df_res = pd.DataFrame({}, columns=df_import.columns.tolist())
+    return df_res.to_json()
+
+
 @app.route('/import', methods=['POST'])
 def upload_file():
     # Récupération des informations du formulaire
-    uploaded_file = request.files['file']
-    filename = uploaded_file.filename
-    year_data = request.form['year-data']
+    filename = get_name(request.form['filename'])
     year_ref = request.form['year-ref']
     table_name = request.form['table-name']
     commentaire = request.form['commentaire']
@@ -114,7 +140,8 @@ def upload_file():
     separator = request.form['separateur']
 
     # Traitement du fichier
-    uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+
+    # uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
 
     # Le traitement varie en fonction de l'extension (CSV, XLSX et ODS supportés)
     try:
@@ -133,14 +160,14 @@ def upload_file():
         return json.dumps("err_empty")
 
     # Les informations sont liés à un référentiel géographique et importés en base de données
-    data_json = lien_ref_geo(df_import, table_name, year_ref, year_data, operation, commentaire)
+    data_json = lien_ref_geo(df_import, table_name, year_ref, operation, commentaire)
 
     # Les informations traitées sont renvoyés à l'affichage sous format JSON
     return data_json
 
 
 # LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
-def lien_ref_geo(df_import, table_name, year_ref, year_data, operation, commentaire):
+def lien_ref_geo(df_import, table_name, year_ref, operation, commentaire):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
     df_import.rename(columns={'com': COM_JOINTURE}, inplace=True)
 
@@ -321,7 +348,13 @@ def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
 
+# Recupere le d'un fichier à partir de son chemin
+def get_name(name):
+    for ind_l in reversed(range(len(name)-1)):
+        if name[ind_l] == '\\':
+            return name[ind_l+1:len(name)]
+
 
 #serveur
 # if __name__ == "__main__":
-#   app.run(host='0.0.0.0',port=1060)
+  # app.run(host='0.0.0.0',port=1060)
