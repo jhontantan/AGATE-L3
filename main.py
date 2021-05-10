@@ -21,7 +21,7 @@ DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
-DB_PASS = "user"
+DB_PASS = "root"
 
 # JOINTURE
 COM_JOINTURE = 'com14'

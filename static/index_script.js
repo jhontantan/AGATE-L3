@@ -82,6 +82,9 @@ async function submitImportForm(event) {
         return;
     }
 
+    $("#import-modal").modal('hide');
+    $("#operation-modal").modal('show');
+
     const form = event.currentTarget;
     const url = form.action;
     const formData = new FormData(form);
@@ -91,9 +94,6 @@ async function submitImportForm(event) {
         method: "POST",
         body: formData
     });
-
-    $("#import-modal").modal('hide');
-    $("#operation-modal").modal('show');
 
     // Récupération du contenu du formulaire après le lien avec le refgéo et l'import dans la base de données
     const resp = await response.json();
@@ -118,7 +118,7 @@ async function submitImportForm(event) {
     // Génération de la liste de dropdowns des opérations
     for (let i = 0; i < results[0].length; i++) {
         let element = await document.createElement("li");
-        let header_name = await document.createTextNode(results[0][i]);
+        let header_name = await document.createTextNode(results[0][i] + " : ");
         let dropdown = await document.createElement("select");
         dropdown.setAttribute("id", "drpd_" + results[0][i]);
         dropdown.setAttribute("name", "drpd_" + results[0][i]);
@@ -155,10 +155,25 @@ async function submitImportForm(event) {
     }
 }
 
+function resetOperationModal() {
+    let comSelect = document.getElementById("com-select");
+    comSelect.textContent = "";
+    let listOp = document.getElementById("list-op");
+    listOp.textContent = "";
+    // dans comSelect, remove child "select"
+    // dans listOp, remove tous les childs "option"
+}
+
 async function submitSelectForm(event) {
     event.preventDefault(); // Empêche le navigateur de recharger la page
 
+    const progress = $("#import-progress"); // Récupération de la barre de progression
     $("#operation-modal").modal('hide');
+
+    progress.width("0%");
+    $(".progress-bar").css("background-color", "#313E47"); // Colore la barre aux couleurs de l'import (#343E47)
+    progress.css("visibility", "visible");  // Affiche la barre
+    progress.width("15%");
 
     const form_select = event.currentTarget;
     const formSelect = new FormData(form_select);
@@ -180,6 +195,7 @@ async function submitSelectForm(event) {
     for (let key of formSelect.entries()) {
        importData.append(key[0], key[1]);
     }
+    progress.width("30%");
 
     const response = await fetch(url, {
         method: "POST",
@@ -188,17 +204,20 @@ async function submitSelectForm(event) {
 
     const json = await response.json();
     const info = JSON.parse(JSON.stringify(json));
+    progress.width("60%");
 
-    // let info_ok = gestionErreurs(info, progress);
-    // if (info_ok === -1) {
-    //     return;
-    // }
+    let info_ok = gestionErreurs(info, progress);
+    if (info_ok === -1) {
+        return;
+    }
 
     let results = [];
     const headers = Object.keys(info); // Récupération des noms de colonnes
     const nbLines = Object.values(info[headers[0]]).length; // Récupération du nombre de lignes
 
     results.push(headers);
+
+    progress.width("80%");
 
     // Réordonne le tableau du serveur pour coller au format de Handsontable
     for (let i = 0; i < nbLines; i++) {
@@ -211,11 +230,17 @@ async function submitSelectForm(event) {
 
     // Vide le formulaire de la pop up
     document.getElementById("import-form").reset();
+    resetOperationModal();
+    progress.width("100%");
 
     // Mets à jour le contenu du tableau
     hot.updateSettings({
         data: results,
     });
+
+    setTimeout(function() {
+        progress.css("visibility", "hidden");
+    }, 500);
 }
 
 // Récupère le formulaire d'import dans l'HTML et ajoute un event listener
@@ -226,6 +251,11 @@ importForm.addEventListener("submit", submitImportForm);
 const selectForm = document.getElementById("operation-form");
 selectForm.addEventListener("submit", submitSelectForm);
 
+const closeSelectModal = document.getElementById("btn-close-op-modal");
+closeSelectModal.addEventListener("click", resetOperationModal);
+
+const crossSelectModal = document.getElementById("cross-select-modal");
+crossSelectModal.addEventListener("click", resetOperationModal);
 
 /** ----- API (Export) ----- **/
 
