@@ -138,45 +138,61 @@ def upload_file():
     commentaire = request.form['commentaire']
     operation = request.form['operation']
     separator = request.form['separateur']
+    com = request.form['col_com']
+
+    tab_sum = []
+    tab_max = []
+    tab_min = []
+    # Recuperation des infos relatives aux op/colonnes
+    for col in  request.form:
+        if col.startswith("drpd_") and col[5:] != com:
+            if request.form[col] == "somme":
+                tab_sum.append(col[5:])
+            elif request.form[col] == "max":
+                tab_max.append(col[5:])
+            elif request.form[col] == "min":
+                tab_min.append(col[5:])
+            else:
+                print("Op non trouvé")
+
+    # print(f"Tab_sum : {tab_sum}")
+    # print(f"Tab_max : {tab_max}")
+    # print(f"Tab_min : {tab_min}")
 
     # Traitement du fichier
-
-    # uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
-
     # Le traitement varie en fonction de l'extension (CSV, XLSX et ODS supportés)
     try:
         if filename[-3:] == "csv":
             df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
-                                    dtype={"com": "string"})
+                                    dtype={ com : "string"})
         elif filename[-4:] == "xlsx":
             df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
-                                      dtype={"com": "string"}, engine="openpyxl")
+                                      dtype={ com : "string"}, engine="openpyxl")
         elif filename[-3:] == "ods":
             df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
-                                      dtype={"com": "string"}, engine="odf")
+                                      dtype={ com : "string"}, engine="odf")
         else:
             return json.dumps("err_ext")
     except pd.errors.EmptyDataError:
         return json.dumps("err_empty")
 
     # Les informations sont liés à un référentiel géographique et importés en base de données
-    data_json = lien_ref_geo(df_import, table_name, year_ref, operation, commentaire)
+    data_json = lien_ref_geo(df_import, com, table_name, year_ref, operation, commentaire, tab_sum, tab_max, tab_min)
 
     # Les informations traitées sont renvoyés à l'affichage sous format JSON
     return data_json
 
 
 # LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
-def lien_ref_geo(df_import, table_name, year_ref, operation, commentaire):
+def lien_ref_geo(df_import, com, table_name, year_ref, operation, commentaire, tab_sum, tab_max, tab_min):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
-    df_import.rename(columns={'com': COM_JOINTURE}, inplace=True)
+    df_import.rename(columns={ com : COM_JOINTURE}, inplace=True)
 
     # Récupération v_passage
     champs_jointure = list_to_str(CHAMPS_JOINTURE)
     champs_jointure_dependant_annee = list_with_year_to_str(CHAMPS_JOINTURE_DEPENDANT_ANNEE,year_ref)
 
     chaine = 'SELECT ' + COM_JOINTURE + ', ' + champs_jointure_dependant_annee + ', ' + champs_jointure + ' FROM ' + NOM_TABLE_REFGEO
-    print(chaine)
     conn = engine.connect()
 
     # Jointure
@@ -193,12 +209,73 @@ def lien_ref_geo(df_import, table_name, year_ref, operation, commentaire):
         if col != COM_JOINTURE and col in cols_dfImport:
             del df_import[str(col)]
 
-    # Suppression COM_JOINTURE du dataframe
+    # # ---------------------------
+    # # Dataframes intermediaires
+    # df_sum = pd.DataFrame
+    # df_max = pd.DataFrame
+    # df_min = pd.DataFrame
+    #
+    # # Somme
+    # if tab_sum:
+    #     df_sum = pd.DataFrame(df_import[[COM_JOINTURE] + tab_sum], columns=[COM_JOINTURE] + tab_sum)
+    #     df_sum = jointure.set_index(COM_JOINTURE).join(df_sum.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    #     df_sum = df_sum.reset_index()
+    #     df_sum = df_sum.drop(columns=[COM_JOINTURE])
+    #     df_sum = df_sum.groupby(by="com"+year_ref, dropna=False, as_index=False).sum()
+    #     print("DF_SUM")
+    #     print(df_sum)
+    #
+    # # Max
+    # if tab_max:
+    #     df_max = pd.DataFrame(df_import[[COM_JOINTURE] + tab_max], columns=[COM_JOINTURE] + tab_max)
+    #     df_max = jointure.set_index(COM_JOINTURE).join(df_max.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    #     df_max = df_max.reset_index()
+    #     df_max = df_max.drop(columns=[COM_JOINTURE])
+    #     df_max = df_max.groupby(by="com"+year_ref, dropna=False, as_index=False).max()
+    #     df_max = pd.DataFrame(df_max[["com"+year_ref]+tab_max], columns=["com"+year_ref]+tab_max)
+    #     print("DF_MAX")
+    #     print(df_max)
+    #
+    # # Min
+    # if tab_min:
+    #     df_min = pd.DataFrame(df_import[[COM_JOINTURE] + tab_min], columns=[COM_JOINTURE] + tab_min)
+    #     df_min = jointure.set_index(COM_JOINTURE).join(df_min.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    #     df_min = df_min.reset_index()
+    #     df_min = df_min.drop(columns=[COM_JOINTURE])
+    #     df_min = df_min.groupby(by="com"+year_ref, dropna=False, as_index=False).min()
+    #     df_min = pd.DataFrame(df_min[["com"+year_ref]+tab_min], columns=["com"+year_ref]+tab_min)
+    #     print("DF_MIN")
+    #     print(df_min)
+    #
+    # # Fusion SUM MAX MIN
+    # df_op = pd.DataFrame
+    #
+    # if tab_sum and tab_max and tab_min:
+    #     pass
+    # elif tab_sum and tab_max:
+    #     pass
+    # elif tab_sum and tab_min:
+    #     pass
+    # elif tab_max and tab_min:
+    #     pass
+    # elif tab_sum:
+    #     df_op = df_sum
+    # elif tab_max:
+    #     df_op = df_max
+    # elif tab_min:
+    #     df_op = df_min
+    #
+    # print(df_op)
+    # # ----------------------------
+
+
+    # Jointure
     try:
         df_res = jointure.set_index(COM_JOINTURE).join(df_import.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
     except KeyError:
         return json.dumps("err_com")
 
+    # Suppression COM_JOINTURE du dataframe
     df_res = df_res.reset_index()
     df_res = df_res.drop(columns=[COM_JOINTURE])
 
@@ -214,6 +291,7 @@ def lien_ref_geo(df_import, table_name, year_ref, operation, commentaire):
         df_res = df_res.groupby(by=groupby, dropna=False, as_index=False).max()
     elif operation == "min":
         df_res = df_res.groupby(by=groupby, dropna=False, as_index=False).min()
+
     ### Ajout Commentaire
     df_res['Commentaire'] = ""
     df_res.loc[0, 'Commentaire'] = commentaire
