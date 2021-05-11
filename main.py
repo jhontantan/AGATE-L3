@@ -195,11 +195,10 @@ def lien_ref_geo(df_import, com, table_name, year_ref, operation, commentaire, t
     chaine = 'SELECT ' + COM_JOINTURE + ', ' + champs_jointure_dependant_annee + ', ' + champs_jointure + ' FROM ' + NOM_TABLE_REFGEO
     conn = engine.connect()
 
-    # Jointure
     try:
         jointure = pd.read_sql(chaine, conn)
     except sqla.exc.ProgrammingError:
-        print("\nUne erreur est survenue lors de la jointure")
+        print("\nUne erreur est survenue lors de la récupération dans v_passage")
         return json.dumps("err_yearref")
 
     ### Suppression des potentiels doublons
@@ -209,100 +208,101 @@ def lien_ref_geo(df_import, com, table_name, year_ref, operation, commentaire, t
         if col != COM_JOINTURE and col in cols_dfImport:
             del df_import[str(col)]
 
-    # # ---------------------------
-    # # Dataframes intermediaires
-    # df_sum = pd.DataFrame
-    # df_max = pd.DataFrame
-    # df_min = pd.DataFrame
-    #
-    # # Somme
-    # if tab_sum:
-    #     df_sum = pd.DataFrame(df_import[[COM_JOINTURE] + tab_sum], columns=[COM_JOINTURE] + tab_sum)
-    #     df_sum = jointure.set_index(COM_JOINTURE).join(df_sum.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
-    #     df_sum = df_sum.reset_index()
-    #     df_sum = df_sum.drop(columns=[COM_JOINTURE])
-    #     df_sum = df_sum.groupby(by="com"+year_ref, dropna=False, as_index=False).sum()
-    #     print("DF_SUM")
-    #     print(df_sum)
-    #
-    # # Max
-    # if tab_max:
-    #     df_max = pd.DataFrame(df_import[[COM_JOINTURE] + tab_max], columns=[COM_JOINTURE] + tab_max)
-    #     df_max = jointure.set_index(COM_JOINTURE).join(df_max.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
-    #     df_max = df_max.reset_index()
-    #     df_max = df_max.drop(columns=[COM_JOINTURE])
-    #     df_max = df_max.groupby(by="com"+year_ref, dropna=False, as_index=False).max()
-    #     df_max = pd.DataFrame(df_max[["com"+year_ref]+tab_max], columns=["com"+year_ref]+tab_max)
-    #     print("DF_MAX")
-    #     print(df_max)
-    #
-    # # Min
-    # if tab_min:
-    #     df_min = pd.DataFrame(df_import[[COM_JOINTURE] + tab_min], columns=[COM_JOINTURE] + tab_min)
-    #     df_min = jointure.set_index(COM_JOINTURE).join(df_min.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
-    #     df_min = df_min.reset_index()
-    #     df_min = df_min.drop(columns=[COM_JOINTURE])
-    #     df_min = df_min.groupby(by="com"+year_ref, dropna=False, as_index=False).min()
-    #     df_min = pd.DataFrame(df_min[["com"+year_ref]+tab_min], columns=["com"+year_ref]+tab_min)
-    #     print("DF_MIN")
-    #     print(df_min)
-    #
-    # # Fusion SUM MAX MIN
-    # df_op = pd.DataFrame
-    #
-    # if tab_sum and tab_max and tab_min:
-    #     pass
-    # elif tab_sum and tab_max:
-    #     pass
-    # elif tab_sum and tab_min:
-    #     pass
-    # elif tab_max and tab_min:
-    #     pass
-    # elif tab_sum:
-    #     df_op = df_sum
-    # elif tab_max:
-    #     df_op = df_max
-    # elif tab_min:
-    #     df_op = df_min
-    #
-    # print(df_op)
-    # # ----------------------------
 
+    # Champs GroupBy
+    groupby = list_with_year_to_list_with_choosen_year(CHAMPS_JOINTURE_DEPENDANT_ANNEE,year_ref) + CHAMPS_JOINTURE
 
-    # Jointure
-    try:
-        df_res = jointure.set_index(COM_JOINTURE).join(df_import.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
-    except KeyError:
-        return json.dumps("err_com")
+    # Gestion des différentes opérations
 
-    # Suppression COM_JOINTURE du dataframe
+    # Somme
+    df_sum = pd.DataFrame(df_import[[COM_JOINTURE] + tab_sum], columns=[COM_JOINTURE] + tab_sum)
+    df_sum = jointure.set_index(COM_JOINTURE).join(df_sum.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    df_sum = df_sum.reset_index()
+    df_sum = df_sum.drop(columns=[COM_JOINTURE])
+    df_sum = df_sum.groupby(by=groupby, dropna=False, as_index=False).sum()
+    df_sum = pd.DataFrame(df_sum[["com" + year_ref] + tab_sum], columns=["com" + year_ref] + tab_sum)
+    print("DF_SUM")
+    print(df_sum)
+
+    # Max
+    df_max = pd.DataFrame(df_import[[COM_JOINTURE] + tab_max], columns=[COM_JOINTURE] + tab_max)
+    df_max = jointure.set_index(COM_JOINTURE).join(df_max.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    df_max = df_max.reset_index()
+    df_max = df_max.drop(columns=[COM_JOINTURE])
+    df_max = df_max.groupby(by=groupby, dropna=False, as_index=False).max()
+    df_max = pd.DataFrame(df_max[["com"+year_ref]+tab_max], columns=["com"+year_ref]+tab_max)
+    print("DF_MAX")
+    print(df_max)
+
+    # Min
+    df_min = pd.DataFrame(df_import[[COM_JOINTURE] + tab_min], columns=[COM_JOINTURE] + tab_min)
+    df_min = jointure.set_index(COM_JOINTURE).join(df_min.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    df_min = df_min.reset_index()
+    df_min = df_min.drop(columns=[COM_JOINTURE])
+    df_min = df_min.groupby(by=groupby, dropna=False, as_index=False).min()
+    df_min = pd.DataFrame(df_min[["com"+year_ref]+tab_min], columns=["com"+year_ref]+tab_min)
+    print("DF_MIN")
+    print(df_min)
+
+    # Fusion des différentes opérations
+    df_op = pd.DataFrame
+    # Sum & Max & Min
+    if tab_sum and tab_max and tab_min:
+        try:
+            df_op = df_sum.set_index("com" + year_ref).join(df_max.set_index("com" + year_ref), how='inner',
+                                                            on="com" + year_ref)
+            df_op = df_op.join(df_min.set_index("com" + year_ref), how='inner',on="com" + year_ref)
+            df_op = df_op.reset_index()
+            print("DF_OP_SUM_MAX_MIN")
+        except KeyError:
+            return json.dumps("err_join_SumMaxMin")
+    # Sum & Max
+    elif tab_sum and tab_max:
+        try:
+            df_op = df_sum.set_index("com"+year_ref).join(df_max.set_index("com"+year_ref), how='inner', on="com"+year_ref)
+            df_op = df_op.reset_index()
+            print("DF_OP_SUM_MAX")
+        except KeyError:
+            return json.dumps("err_join_SumMax")
+    elif tab_sum and tab_min:
+        try:
+            df_op = df_sum.set_index("com" + year_ref).join(df_min.set_index("com" + year_ref), how='inner',
+                                                            on="com" + year_ref)
+            df_op = df_op.reset_index()
+            print("DF_OP_SUM_MIN")
+        except KeyError:
+            return json.dumps("err_join_SumMin")
+    elif tab_max and tab_min:
+        try:
+            df_op = df_max.set_index("com" + year_ref).join(df_min.set_index("com" + year_ref), how='inner',
+                                                            on="com" + year_ref)
+            df_op = df_op.reset_index()
+            print("DF_OP_SUM_MIN")
+        except KeyError:
+            return json.dumps("err_join_MaxMin")
+    elif tab_sum:
+        df_op = df_sum
+    elif tab_max:
+        df_op = df_max
+    elif tab_min:
+        df_op = df_min
+
+    ### Jointure des refs
+
+    # On supprime COM_JOINTURE du df jointure
+    jointure = jointure.drop(columns=[COM_JOINTURE])
+
+    # Jointure sur com courrant de df_op sur jointure
+    df_res = jointure.set_index("com"+year_ref).join(df_op.set_index("com"+year_ref), how='inner', on="com"+year_ref)
+
+    # On enlève le com courrant de l'index (il repasse en colonne)
     df_res = df_res.reset_index()
-    df_res = df_res.drop(columns=[COM_JOINTURE])
 
-    # GroupBy
-    tab_champs_jointure_dependant_annee = list_with_year_to_list_with_choosen_year(CHAMPS_JOINTURE_DEPENDANT_ANNEE,year_ref)
-    groupby = tab_champs_jointure_dependant_annee + CHAMPS_JOINTURE
-
-
-    # Type de GroupBy
-    if operation == "somme":
-        df_res = df_res.groupby(by=groupby, dropna=False, as_index=False).sum()
-    elif operation == "max":
-        df_res = df_res.groupby(by=groupby, dropna=False, as_index=False).max()
-    elif operation == "min":
-        df_res = df_res.groupby(by=groupby, dropna=False, as_index=False).min()
-
-    ### Ajout Commentaire
-    df_res['Commentaire'] = ""
-    df_res.loc[0, 'Commentaire'] = commentaire
-
-    # Mise en base
-    result = mise_en_base(table_name, df_res)
-
-    if result == 1:
-        return json.dumps("err_name")
+    # On supprime les données dupliquées à cause de la jointure
+    df_res = df_res.drop_duplicates()
 
     return df_res.to_json()
+
 
 
 # AJOUT D'UNE NOUVELLE TABLE DANS LA BASE DE DONNEES
