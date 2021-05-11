@@ -144,6 +144,7 @@ def upload_file():
     tab_sum = []
     tab_max = []
     tab_min = []
+
     # Recuperation des infos relatives aux op/colonnes
     for col in  request.form:
         if col.startswith("drpd_") and col[5:] != com:
@@ -156,10 +157,6 @@ def upload_file():
                 tab_min.append(col[5:])
             else:
                 print("Op non trouvé")
-
-    # print(f"Tab_sum : {tab_sum}")
-    # print(f"Tab_max : {tab_max}")
-    # print(f"Tab_min : {tab_min}")
 
     # Traitement du fichier
     # Le traitement varie en fonction de l'extension (CSV, XLSX et ODS supportés)
@@ -178,7 +175,7 @@ def upload_file():
     except pd.errors.EmptyDataError:
         return json.dumps("err_empty")
 
-    # Les informations sont liés à un référentiel géographique et importés en base de données
+    # Les informations sont liés à un référentiel géographique
     data_json = lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_max, tab_min)
 
     # Les informations traitées sont renvoyés à l'affichage sous format JSON
@@ -257,7 +254,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MAX_MIN")
         except KeyError:
-            return json.dumps("err_join_SumMaxMin")
+            return json.dumps("err_join_OP")
     # Sum & Max
     elif tab_sum and tab_max:
         try:
@@ -265,7 +262,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MAX")
         except KeyError:
-            return json.dumps("err_join_SumMax")
+            return json.dumps("err_join_OP")
     elif tab_sum and tab_min:
         try:
             df_op = df_sum.set_index("com" + year_ref).join(df_min.set_index("com" + year_ref), how='inner',
@@ -273,7 +270,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MIN")
         except KeyError:
-            return json.dumps("err_join_SumMin")
+            return json.dumps("err_join_OP")
     elif tab_max and tab_min:
         try:
             df_op = df_max.set_index("com" + year_ref).join(df_min.set_index("com" + year_ref), how='inner',
@@ -281,7 +278,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MIN")
         except KeyError:
-            return json.dumps("err_join_MaxMin")
+            return json.dumps("err_join_OP")
     elif tab_sum:
         df_op = df_sum
     elif tab_max:
