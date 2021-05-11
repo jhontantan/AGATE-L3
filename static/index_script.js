@@ -47,6 +47,8 @@ function gestionErreurs(info, progress) {
             msg = "L'extension du fichier \"" + fileName + "\" n'est pas supportée.";
         } else if (info === "err_empty") {
             msg = "Le fichier \"" + fileName + "\" est vide.";
+        } else if (info === "err_jointure") {
+            msg = "Erreur lors de la jointure du referentiel : Attention à bien ignorer tous les champs qui ne sont pas des données";
         } else {
             msg = "Colonne avec les codes INSEE introuvable.\nAjoutez une colonne \"com\" avec les codes ou renommez la colonne correspondante.";
         }
@@ -133,6 +135,9 @@ async function submitImportForm(event) {
         let option_3 = await document.createElement("option");
         option_3.value = "min";
         option_3.text = "min";
+        let option_4 = await document.createElement("option");
+        option_4.value = "ignorer";
+        option_4.text = "ignorer";
         // Selection de l'op par défaut
         let main_operator = await document.forms['import-form'].elements['drp_dwn_op'].value;
         switch (main_operator) {
@@ -149,6 +154,7 @@ async function submitImportForm(event) {
         dropdown.appendChild(option_1);
         dropdown.appendChild(option_2);
         dropdown.appendChild(option_3);
+        dropdown.appendChild(option_4);
         element.appendChild(header_name);
         element.appendChild(dropdown);
         document.getElementById("list-op").appendChild(element);
