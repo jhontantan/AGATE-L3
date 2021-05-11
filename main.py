@@ -140,12 +140,14 @@ def upload_file():
     separator = request.form['separateur']
     com = request.form['col_com']
 
+    tab_ops = []
     tab_sum = []
     tab_max = []
     tab_min = []
     # Recuperation des infos relatives aux op/colonnes
     for col in  request.form:
         if col.startswith("drpd_") and col[5:] != com:
+            tab_ops.append(col[5:])
             if request.form[col] == "somme":
                 tab_sum.append(col[5:])
             elif request.form[col] == "max":
@@ -177,14 +179,14 @@ def upload_file():
         return json.dumps("err_empty")
 
     # Les informations sont liés à un référentiel géographique et importés en base de données
-    data_json = lien_ref_geo(df_import, com, table_name, year_ref, operation, commentaire, tab_sum, tab_max, tab_min)
+    data_json = lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_max, tab_min)
 
     # Les informations traitées sont renvoyés à l'affichage sous format JSON
     return data_json
 
 
 # LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
-def lien_ref_geo(df_import, com, table_name, year_ref, operation, commentaire, tab_sum, tab_max, tab_min):
+def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_max, tab_min):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
     df_import.rename(columns={ com : COM_JOINTURE}, inplace=True)
 
@@ -300,6 +302,14 @@ def lien_ref_geo(df_import, com, table_name, year_ref, operation, commentaire, t
 
     # On supprime les données dupliquées à cause de la jointure
     df_res = df_res.drop_duplicates()
+
+    # On remet les colonnes dans l'ordre initial
+    df_res = pd.DataFrame(df_res[jointure.columns.tolist() + tab_ops], columns=jointure.columns.tolist() + tab_ops)
+
+    # Ajout de commentaire
+    if commentaire:
+        df_res['Commentaire'] = ""
+        df_res.loc[0, 'Commentaire'] = commentaire
 
     return df_res.to_json()
 
