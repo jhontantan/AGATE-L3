@@ -3,6 +3,7 @@
 const data = [[]]; // Contenu du tableau
 const container = document.getElementById('tableau'); // Récupération de la div où le tableau sera affiché
 const hot = new Handsontable(container, {
+    title: '',
     data: data,
     colWidth: 500,
     rowHeights: 30,
@@ -88,6 +89,10 @@ async function submitImportForm(event) {
     const form = event.currentTarget;
     const url = form.action;
     const formData = new FormData(form);
+
+    hot.updateSettings({
+        title: document.getElementById("table-name").value,
+    });
 
     // Envoi du contenu du formulaire au serveur
     const response = await fetch(url, {
@@ -325,8 +330,19 @@ async function exportToCSV(event) {
     progress.width("25%"); // Commence le chargement de la barre
 
     const url = window.location.href + "export"; // Récupération de l'URL d'export
-    const data_csv = JSON.stringify(cleanData(hot.getData())); // Récupération des données du tableau
+    const data = cleanData(hot.getData()); // Récupération des données du tableau
     progress.width("50%");
+
+    let title = hot.getSettings().title
+
+    if (title === '') {
+        window.alert("Veuillez importer un fichier.");
+        progress.css("visibility", "hidden");
+        return -1;
+    }
+
+    data.push([title])
+    const data_csv = JSON.stringify(data); // Récupération des données du tableau
 
     // Envoie les données du tableau au serveur pour conversion en CSV
     const response = await fetch(url, {
@@ -343,7 +359,8 @@ async function exportToCSV(event) {
     progress.width("100%");
 
     // Téléchargement du fichier
-    downloadFile('export.csv', 'data:text/csv;charset=UTF-8,' + csv);
+    const filename = title + ".csv"
+    downloadFile(filename, 'data:text/csv;charset=UTF-8,' + csv);
 
     // Cache la barre de progression
     setTimeout(function () {
