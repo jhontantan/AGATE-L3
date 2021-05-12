@@ -9,6 +9,7 @@ from flask_mail import Mail, Message
 from sqlalchemy import create_engine, exc
 from threading import Thread
 from config import Config
+from unidecode import unidecode
 
 # ---------- Informations ---------- #
 # Prérequis
@@ -20,7 +21,7 @@ DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
-DB_PASS = "user"
+DB_PASS = "root"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
@@ -111,20 +112,17 @@ def get_operations():
 
     try:
         if filename[-3:] == "csv":
-            df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
-                                    nrows=1)
+            df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator)
         elif filename[-4:] == "xlsx":
-            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
-                                      nrows=1, engine="openpyxl")
+            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename), engine="openpyxl")
         elif filename[-3:] == "ods":
-            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
-                                      nrows=1, engine="odf")
+            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename), engine="odf")
         else:
             return json.dumps("err_ext")
     except pd.errors.EmptyDataError:
         return json.dumps("err_empty")
 
-    df_res = pd.DataFrame({}, columns=df_import.columns.tolist())
+    df_res = pd.DataFrame({}, columns=df_import.columns.to_list())
     return df_res.to_json()
 
 
@@ -175,11 +173,31 @@ def upload_file():
     except pd.errors.EmptyDataError:
         return json.dumps("err_empty")
 
+    # Homogénéisation des codes INSEE : doit faire 5 caractères maximum
+    df_import[com] = cleanCodesINSEE(df_import[com].tolist())
+
     # Les informations sont liés à un référentiel géographique
     data_json = lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_max, tab_min)
 
     # Les informations traitées sont renvoyés à l'affichage sous format JSON
     return data_json
+
+
+def cleanCodesINSEE(all_codes):
+    new_codes = []
+    for code in all_codes:
+        if len(code) > 5 and code[0] == "0":
+            c = code[0]
+            while c == "0":
+                code = code[1:]
+                c = code[0]
+        if len(code) > 5 and code[-1] == "0":
+            c = code[-1]
+            while c == "0":
+                code = code[:-1]
+                c = code[-1]
+        new_codes.append(code)
+    return new_codes
 
 
 # LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
@@ -227,8 +245,8 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
         df_sum = pd.DataFrame(df_sum[["com" + year_ref] + tab_sum], columns=["com" + year_ref] + tab_sum)
     except KeyError:
         return json.dumps("err_jointure")
-    print("DF_SUM")
-    print(df_sum)
+    # print("DF_SUM")
+    # print(df_sum)
 
     # Max
     df_max = pd.DataFrame(df_import[[COM_JOINTURE] + tab_max], columns=[COM_JOINTURE] + tab_max)
@@ -237,8 +255,8 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     df_max = df_max.drop(columns=[COM_JOINTURE])
     df_max = df_max.groupby(by="com"+year_ref, dropna=False, as_index=False).max()
     df_max = pd.DataFrame(df_max[["com"+year_ref]+tab_max], columns=["com"+year_ref]+tab_max)
-    print("DF_MAX")
-    print(df_max)
+    # print("DF_MAX")
+    # print(df_max)
 
     # Min
     df_min = pd.DataFrame(df_import[[COM_JOINTURE] + tab_min], columns=[COM_JOINTURE] + tab_min)
@@ -247,8 +265,8 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     df_min = df_min.drop(columns=[COM_JOINTURE])
     df_min = df_min.groupby(by="com"+year_ref, dropna=False, as_index=False).min()
     df_min = pd.DataFrame(df_min[["com"+year_ref]+tab_min], columns=["com"+year_ref]+tab_min)
-    print("DF_MIN")
-    print(df_min)
+    # print("DF_MIN")
+    # print(df_min)
 
     # Fusion des différentes opérations
     df_op = pd.DataFrame
@@ -299,11 +317,11 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     # On supprime COM_JOINTURE du df jointure
     jointure = jointure.drop(columns=[COM_JOINTURE])
 
-    # Jointure sur com courrant de df_op sur jointure
+    # Jointure sur com courant de df_op sur jointure
     df_res = jointure.set_index("com" + year_ref).join(df_op.set_index("com" + year_ref), how='inner',
                                                        on="com" + year_ref)
 
-    # On enlève le com courrant de l'index (il repasse en colonne)
+    # On enlève le com courant de l'index (il repasse en colonne)
     df_res = df_res.reset_index()
 
     # On supprime les données dupliquées à cause de la jointure
@@ -317,7 +335,19 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
         df_res['Commentaire'] = ""
         df_res.loc[0, 'Commentaire'] = commentaire
 
+    # Homogénéisation de l'écriture des colonnes
+    df_res.columns = removeSpecialChar(df_res.columns.tolist())
+
     return df_res.to_json()
+
+
+def removeSpecialChar(tab):
+    clean_tab = []
+    for title in tab:
+        title = unidecode(title.lower()).replace(" ", "_")
+        clean_tab.append(title)
+
+    return clean_tab
 
 
 # AJOUT D'UNE NOUVELLE TABLE DANS LA BASE DE DONNEES
@@ -409,8 +439,6 @@ def download_file():
     cleanTempDirectory()
 
     file_name = db_name + ".csv"
-
-    print(file_name)
 
     # Conversion du dataframe en CSV et renvoie à l'affichage pour le téléchargement
     path = os.path.join(os.getcwd(), "temp")
