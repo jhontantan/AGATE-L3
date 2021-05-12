@@ -473,9 +473,17 @@ def get_name(name):
             return name[ind_l + 1:len(name)]
 
 def get_name_mail(name):
+    res = ""
     for ind_l in reversed(range(len(name) - 1)):
-        if name[ind_l] == '/':
-            return name[ind_l + 1:len(name)]
+        if name[ind_l] == '\\':
+            res =  name[ind_l + 1:len(name)]
+            break
+
+    if not res :
+        for ind_l in reversed(range(len(name) - 1)):
+            if name[ind_l] == '/':
+                return name[ind_l + 1:len(name)]
+    return res
 
 # serveur
 # if __name__ == "__main__":
