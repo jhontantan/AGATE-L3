@@ -10,7 +10,6 @@ from sqlalchemy import create_engine, exc
 from threading import Thread
 from config import Config
 
-
 # ---------- Informations ---------- #
 # Prérequis
 # pip freeze > requirements.txt
@@ -21,7 +20,7 @@ DB_HOST = "127.0.0.1"
 DB_PORT = "5432"
 DB_NAME = "agate"
 DB_USER = "postgres"
-DB_PASS = "user"
+DB_PASS = "root"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
@@ -146,7 +145,7 @@ def upload_file():
     tab_min = []
 
     # Recuperation des infos relatives aux op/colonnes
-    for col in  request.form:
+    for col in request.form:
         if col.startswith("drpd_") and col[5:] != com:
             if request.form[col] != "ignorer":
                 tab_ops.append(col[5:])
@@ -164,13 +163,13 @@ def upload_file():
     try:
         if filename[-3:] == "csv":
             df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator,
-                                    dtype={ com : "string"})
+                                    dtype={com: "string"})
         elif filename[-4:] == "xlsx":
             df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
-                                      dtype={ com : "string"}, engine="openpyxl")
+                                      dtype={com: "string"}, engine="openpyxl")
         elif filename[-3:] == "ods":
             df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename),
-                                      dtype={ com : "string"}, engine="odf")
+                                      dtype={com: "string"}, engine="odf")
         else:
             return json.dumps("err_ext")
     except pd.errors.EmptyDataError:
@@ -186,11 +185,11 @@ def upload_file():
 # LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
 def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_max, tab_min):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
-    df_import.rename(columns={ com : COM_JOINTURE}, inplace=True)
+    df_import.rename(columns={com: COM_JOINTURE}, inplace=True)
 
     # Récupération v_passage
     champs_jointure = list_to_str(CHAMPS_JOINTURE)
-    champs_jointure_dependant_annee = list_with_year_to_str(CHAMPS_JOINTURE_DEPENDANT_ANNEE,year_ref)
+    champs_jointure_dependant_annee = list_with_year_to_str(CHAMPS_JOINTURE_DEPENDANT_ANNEE, year_ref)
 
     chaine = 'SELECT ' + COM_JOINTURE + ', ' + champs_jointure_dependant_annee + ', ' + champs_jointure + ' FROM ' + NOM_TABLE_REFGEO
     conn = engine.connect()
@@ -208,9 +207,8 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
         if col != COM_JOINTURE and col in cols_dfImport:
             del df_import[str(col)]
 
-
     # Champs GroupBy
-    groupby = list_with_year_to_list_with_choosen_year(CHAMPS_JOINTURE_DEPENDANT_ANNEE,year_ref) + CHAMPS_JOINTURE
+    groupby = list_with_year_to_list_with_choosen_year(CHAMPS_JOINTURE_DEPENDANT_ANNEE, year_ref) + CHAMPS_JOINTURE
 
     ### Gestion des différentes opérations
 
@@ -259,7 +257,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
         try:
             df_op = df_sum.set_index("com" + year_ref).join(df_max.set_index("com" + year_ref), how='inner',
                                                             on="com" + year_ref)
-            df_op = df_op.join(df_min.set_index("com" + year_ref), how='inner',on="com" + year_ref)
+            df_op = df_op.join(df_min.set_index("com" + year_ref), how='inner', on="com" + year_ref)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MAX_MIN")
         except KeyError:
@@ -267,7 +265,8 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     # Sum & Max
     elif tab_sum and tab_max:
         try:
-            df_op = df_sum.set_index("com"+year_ref).join(df_max.set_index("com"+year_ref), how='inner', on="com"+year_ref)
+            df_op = df_sum.set_index("com" + year_ref).join(df_max.set_index("com" + year_ref), how='inner',
+                                                            on="com" + year_ref)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MAX")
         except KeyError:
@@ -301,7 +300,8 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     jointure = jointure.drop(columns=[COM_JOINTURE])
 
     # Jointure sur com courrant de df_op sur jointure
-    df_res = jointure.set_index("com"+year_ref).join(df_op.set_index("com"+year_ref), how='inner', on="com"+year_ref)
+    df_res = jointure.set_index("com" + year_ref).join(df_op.set_index("com" + year_ref), how='inner',
+                                                       on="com" + year_ref)
 
     # On enlève le com courrant de l'index (il repasse en colonne)
     df_res = df_res.reset_index()
@@ -318,7 +318,6 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
         df_res.loc[0, 'Commentaire'] = commentaire
 
     return df_res.to_json()
-
 
 
 # AJOUT D'UNE NOUVELLE TABLE DANS LA BASE DE DONNEES
@@ -343,6 +342,7 @@ def mise_en_base(table_name, dataframe):
 
     return 0
 
+
 # TODO : df_to_sql amélioration
 # Fonction qui retourne le tableau de types postgres associé au tableau de type dataframe entré
 def df_to_sql(dfparam):
@@ -365,14 +365,16 @@ def list_to_str(liste):
             str = str + liste[i] + ', '
     return str
 
-def list_with_year_to_str(liste,year):
+
+def list_with_year_to_str(liste, year):
     string = ""
     for i in range(len(liste)):
         if i == (len(liste) - 1):
-            string = string  + liste[i] + str(year)
+            string = string + liste[i] + str(year)
         else:
             string = string + liste[i] + str(year) + ', '
     return string
+
 
 def list_with_year_to_list_with_choosen_year(liste, year):
     res = []
@@ -380,12 +382,15 @@ def list_with_year_to_list_with_choosen_year(liste, year):
         res.append(liste[i] + year)
     return res
 
+
 # -------------------
 # EXPORTER UN FICHIER
 # -------------------
 @app.route('/export', methods=['POST'])
 def download_file():
     content = request.json  # Récupération du json envoyé par l'affichage
+    db_name = content[-1][0]
+    content.remove(content[-1])
 
     # Séparation des colonnes et du contenu du json
     try:
@@ -398,16 +403,24 @@ def download_file():
     except IndexError:
         df_export = pd.DataFrame.from_records(content)
 
+    mise_en_base(db_name, df_export)
+
     # Vide le dossier local de fichiers
     cleanTempDirectory()
 
-    # Conversion du dataframe en CSV et renvoie à l'affichage pour le téléchargement
-    df_export.to_csv('export.csv', sep=";", index=False)
-    send_email()
+    file_name = db_name + ".csv"
 
-    return send_file('export.csv',
+    print(file_name)
+
+    # Conversion du dataframe en CSV et renvoie à l'affichage pour le téléchargement
+    path = os.path.join(os.getcwd(), "temp")
+    file_name_path = os.path.join(path, file_name)
+    df_export.to_csv(file_name_path, sep=";", index=False)
+    send_email(file_name_path)
+
+    return send_file(file_name_path,
                      mimetype='text/csv',
-                     attachment_filename='export.csv',
+                     attachment_filename=file_name,
                      as_attachment=True)
 
 
@@ -425,30 +438,31 @@ def cleanTempDirectory():
                 pass
 
 
-
 # ---------------------------
 # ENVOI AUTOMATIQUE D'UN MAIL
 # ---------------------------
-def send_email():
+# TODO : vérifier que le nouveau nom fonctionne
+def send_email(file_name):
     msg = Message('Outil Agate - Traitement : Nouveau Fichier exporté', recipients=MAIL_ADRESSES_DEST)
     msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
-    with app.open_resource("export.csv") as fp:
-        msg.attach("export.csv", "text/csv", fp.read())
+    with app.open_resource(file_name) as fp:
+        msg.attach(file_name, "text/csv", fp.read())
     thr = Thread(target=send_async_email, args=[app, msg])
     thr.start()
     return render_template('index.html')
+
 
 def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
 
+
 # Recupere le d'un fichier à partir de son chemin
 def get_name(name):
-    for ind_l in reversed(range(len(name)-1)):
+    for ind_l in reversed(range(len(name) - 1)):
         if name[ind_l] == '\\':
-            return name[ind_l+1:len(name)]
+            return name[ind_l + 1:len(name)]
 
-
-#serveur
+# serveur
 # if __name__ == "__main__":
-  # app.run(host='0.0.0.0',port=1060)
+# app.run(host='0.0.0.0',port=1060)
