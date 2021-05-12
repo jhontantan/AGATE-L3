@@ -104,11 +104,11 @@ def get_operations():
 
     try:
         if filename[-3:] == "csv":
-            df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator)
+            df_import = pd.read_csv(os.path.join(app.config['UPLOAD_PATH'], filename), sep=separator, nrows=1)
         elif filename[-4:] == "xlsx":
-            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename), engine="openpyxl")
+            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename), engine="openpyxl", nrows=1)
         elif filename[-3:] == "ods":
-            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename), engine="odf")
+            df_import = pd.read_excel(os.path.join(app.config['UPLOAD_PATH'], filename), engine="odf", nrows=1)
         else:
             return json.dumps("err_ext")
     except pd.errors.EmptyDataError:
