@@ -1,11 +1,17 @@
 class Config:
 
     # ----- Database ----- #
-    SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:user@127.0.0.1:5432/agate"
+    # Database
+    DB_HOST = "127.0.0.1"
+    DB_PORT = "5432"
+    DB_NAME = "agate"
+    DB_USER = "postgres"
+    DB_PASS = "user"
+    SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://" + DB_USER + ":" + DB_PASS + "@" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # ----- Import ----- #
-    ## app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024   //taille ficher 4MB
+
     UPLOAD_EXTENSIONS = ['.csv', '.xlsx', 'ods']
     UPLOAD_PATH = 'temp'
 
@@ -15,13 +21,13 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
 
-    MAIL_USERNAME = 'adressedetest73@outlook.fr'  # traitement-geomatique@agate-territoires.fr
-    MAIL_PASSWORD = 'motdepasse73' # Won06597
+    MAIL_USERNAME = 'adressedetest73@outlook.fr' # 'traitement-geomatique@agate-territoires.fr'
+    MAIL_PASSWORD = 'motdepasse73' # 'Won06597'
 
     # Options pour le debug
     MAIL_DEBUG = True
     MAIL_SUPPRESS_SEND = False
 
-    MAIL_DEFAULT_SENDER = ('Outil Agate', 'adressedetest73@outlook.fr')
+    MAIL_DEFAULT_SENDER = ('Outil Agate', 'adressedetest73@outlook.fr') # ('Outil Agate', 'traitement-geomatique@agate-territoires.fr')
     MAIL_MAX_EMAILS = None
     MAIL_ASCII_ATTACHMENTS = True

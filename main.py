@@ -15,12 +15,6 @@ from config import Config
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
 
-# Database
-DB_HOST = "127.0.0.1"
-DB_PORT = "5432"
-DB_NAME = "agate"
-DB_USER = "postgres"
-DB_PASS = "user"
 
 # JOINTURE
 COM_JOINTURE = 'com14'
@@ -30,7 +24,7 @@ NOM_TABLE_REFGEO = 'v_passage'
 
 # Mail
 MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']  # geomatique@agate-territoires.fr
-# ---------------------------------- #
+
 
 # ----- Lancement de l'app ----- #
 app = Flask(__name__)
@@ -39,9 +33,7 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/KeyAgathe'
 mail = Mail(app)
 
 # ---------- Engine Databse ---------- #
-engine = create_engine(
-    ('postgresql+psycopg2://' + DB_USER + ':' + DB_PASS + '@' + DB_HOST + ':' + DB_PORT + '/' + DB_NAME),
-    pool_recycle=3600)
+engine = create_engine(Config.SQLALCHEMY_DATABASE_URI, pool_recycle=3600)
 
 
 # ---------- Connexion Admin ------- #
@@ -127,7 +119,6 @@ def get_operations():
     df_res = pd.DataFrame({}, columns=df_import.columns.tolist())
     return df_res.to_json()
 
-
 @app.route('/import', methods=['POST'])
 def upload_file():
     # Récupération des informations du formulaire
@@ -181,7 +172,6 @@ def upload_file():
     # Les informations traitées sont renvoyés à l'affichage sous format JSON
     return data_json
 
-
 # LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
 def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_max, tab_min):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
@@ -227,8 +217,6 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
         df_sum = pd.DataFrame(df_sum[["com" + year_ref] + tab_sum], columns=["com" + year_ref] + tab_sum)
     except KeyError:
         return json.dumps("err_jointure")
-    print("DF_SUM")
-    print(df_sum)
 
     # Max
     df_max = pd.DataFrame(df_import[[COM_JOINTURE] + tab_max], columns=[COM_JOINTURE] + tab_max)
@@ -237,8 +225,6 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     df_max = df_max.drop(columns=[COM_JOINTURE])
     df_max = df_max.groupby(by="com"+year_ref, dropna=False, as_index=False).max()
     df_max = pd.DataFrame(df_max[["com"+year_ref]+tab_max], columns=["com"+year_ref]+tab_max)
-    print("DF_MAX")
-    print(df_max)
 
     # Min
     df_min = pd.DataFrame(df_import[[COM_JOINTURE] + tab_min], columns=[COM_JOINTURE] + tab_min)
@@ -247,8 +233,6 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     df_min = df_min.drop(columns=[COM_JOINTURE])
     df_min = df_min.groupby(by="com"+year_ref, dropna=False, as_index=False).min()
     df_min = pd.DataFrame(df_min[["com"+year_ref]+tab_min], columns=["com"+year_ref]+tab_min)
-    print("DF_MIN")
-    print(df_min)
 
     # Fusion des différentes opérations
     df_op = pd.DataFrame
@@ -319,7 +303,6 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
 
     return df_res.to_json()
 
-
 # AJOUT D'UNE NOUVELLE TABLE DANS LA BASE DE DONNEES
 def mise_en_base(table_name, dataframe):
     # Setup Connexion + definition du curseur
@@ -339,9 +322,7 @@ def mise_en_base(table_name, dataframe):
         print('La mise en base a été réalisée avec succes ')
     finally:
         conn.close()
-
     return 0
-
 
 # TODO : df_to_sql amélioration
 # Fonction qui retourne le tableau de types postgres associé au tableau de type dataframe entré
@@ -354,8 +335,7 @@ def df_to_sql(dfparam):
             res.update({i: sqla.types.INT()})
     return res
 
-
-# prend une liste de strings et retourne la concat de cette liste avec des ','
+# Permet de créer une chaine pour requête sql à partir d'une liste
 def list_to_str(liste):
     str = ""
     for i in range(len(liste)):
@@ -365,7 +345,7 @@ def list_to_str(liste):
             str = str + liste[i] + ', '
     return str
 
-
+# Permet de créer une chaine pour requête sql a partir d'une liste de données relative aux années
 def list_with_year_to_str(liste, year):
     string = ""
     for i in range(len(liste)):
@@ -375,7 +355,7 @@ def list_with_year_to_str(liste, year):
             string = string + liste[i] + str(year) + ', '
     return string
 
-
+# Permet de créer une liste de données relative à l'année 'year'
 def list_with_year_to_list_with_choosen_year(liste, year):
     res = []
     for i in range(len(liste)):
@@ -441,21 +421,20 @@ def cleanTempDirectory():
 # ---------------------------
 # ENVOI AUTOMATIQUE D'UN MAIL
 # ---------------------------
-# TODO : vérifier que le nouveau nom fonctionne
+
 def send_email(file_name):
-    msg = Message('Outil Agate - Traitement : Nouveau Fichier exporté', recipients=MAIL_ADRESSES_DEST)
+    file_name_affichage = get_name(file_name)
+    msg = Message('Outil Agate - Traitement : ' + file_name_affichage, recipients=MAIL_ADRESSES_DEST)
     msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
     with app.open_resource(file_name) as fp:
-        msg.attach(file_name, "text/csv", fp.read())
+        msg.attach(file_name_affichage, "text/csv", fp.read())
     thr = Thread(target=send_async_email, args=[app, msg])
     thr.start()
     return render_template('index.html')
 
-
 def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
-
 
 # Recupere le d'un fichier à partir de son chemin
 def get_name(name):
