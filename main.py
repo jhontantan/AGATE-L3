@@ -453,7 +453,7 @@ def cleanTempDirectory():
 # ---------------------------
 
 def send_email(file_name):
-    file_name_affichage = get_name(file_name)
+    file_name_affichage = get_name_mail(file_name)
     msg = Message('Outil Agate - Traitement : ' + file_name_affichage, recipients=MAIL_ADRESSES_DEST)
     msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
     with app.open_resource(file_name) as fp:
@@ -470,6 +470,11 @@ def send_async_email(app, msg):
 def get_name(name):
     for ind_l in reversed(range(len(name) - 1)):
         if name[ind_l] == '\\':
+            return name[ind_l + 1:len(name)]
+
+def get_name_mail(name):
+    for ind_l in reversed(range(len(name) - 1)):
+        if name[ind_l] == '/':
             return name[ind_l + 1:len(name)]
 
 # serveur
