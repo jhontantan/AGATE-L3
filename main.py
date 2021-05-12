@@ -114,8 +114,59 @@ def get_operations():
     except pd.errors.EmptyDataError:
         return json.dumps("err_empty")
 
-    df_res = pd.DataFrame({}, columns=df_import.columns.to_list())
+    empty_lines = has_empty_header(df_import.columns.tolist())
+    empty_columns = df_import.isnull().values.any()
+
+    if empty_lines or empty_columns:
+        df = open_full_file(os.path.join(app.config['UPLOAD_PATH'], filename), filename, separator)
+        df_import = remove_empty_lines(df, empty_lines, empty_columns)
+        save_file(df_import, os.path.join(app.config['UPLOAD_PATH'], filename), filename, separator)
+
+    # df_import.columns = remove_specialchar(df_import.columns.tolist())
+
+    df_res = pd.DataFrame({}, columns=df_import.columns)
     return df_res.to_json()
+
+
+def has_empty_header(headers):
+    for header in headers:
+        if "Unnamed" not in header:
+            return False
+    return True
+
+
+def open_full_file(path, name, sep):
+    if name[-3:] == "csv":
+        return pd.read_csv(path, sep=sep)
+    elif name[-4:] == "xlsx":
+        return pd.read_excel(path, engine="openpyxl")
+    elif name[-3:] == "ods":
+        return pd.read_excel(path, engine="odf")
+
+
+def remove_empty_lines(df, empty_lines, empty_columns):
+    df_new = pd.DataFrame()
+    if empty_columns:
+        df_new = df.dropna(axis=1, how='all')
+        df_new = df_new.reset_index(drop=True)
+
+    if empty_lines:
+        df_new = df_new.dropna(axis=0, how='all')
+        new_header = df_new.iloc[0]
+        df_new = df_new[1:]
+        df_new.columns = remove_specialchar(new_header.tolist())
+
+    return df_new
+
+
+def save_file(df, path, name, sep):
+    if name[-3:] == "csv":
+        df.to_csv(path, sep=sep, index=False)
+    elif name[-4:] == "xlsx":
+        df.to_excel(path, engine="openpyxl", index=False)
+    elif name[-3:] == "ods":
+        df.to_excel(path, engine="odf", index=False)
+
 
 @app.route('/import', methods=['POST'])
 def upload_file():
@@ -165,7 +216,7 @@ def upload_file():
         return json.dumps("err_empty")
 
     # Homogénéisation des codes INSEE : doit faire 5 caractères maximum
-    df_import[com] = cleanCodesINSEE(df_import[com].tolist())
+    df_import[com] = clean_codesINSEE(df_import[com].tolist())
 
     # Les informations sont liés à un référentiel géographique
     data_json = lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_max, tab_min)
@@ -174,7 +225,7 @@ def upload_file():
     return data_json
 
 
-def cleanCodesINSEE(all_codes):
+def clean_codesINSEE(all_codes):
     new_codes = []
     for code in all_codes:
         if len(code) > 5 and code[0] == "0":
@@ -321,12 +372,12 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
         df_res.loc[0, 'Commentaire'] = commentaire
 
     # Homogénéisation de l'écriture des colonnes
-    df_res.columns = removeSpecialChar(df_res.columns.tolist())
+    df_res.columns = remove_specialchar(df_res.columns.tolist())
 
     return df_res.to_json()
 
 
-def removeSpecialChar(tab):
+def remove_specialchar(tab):
     clean_tab = []
     for title in tab:
         title = unidecode(title.lower()).replace(" ", "_")
