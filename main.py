@@ -1,10 +1,10 @@
+import linecache
 import os
 import pandas as pd
 import sqlalchemy as sqla
 from flask import Flask, render_template, request, send_file, redirect, url_for, session
 from flask import flash
 import json
-
 from flask_mail import Mail, Message
 from sqlalchemy import create_engine, exc
 from threading import Thread
@@ -24,7 +24,8 @@ CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libd
 NOM_TABLE_REFGEO = 'v_passage'
 
 # Mail
-MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']  # geomatique@agate-territoires.fr
+MAIL_ADRESSES_DEST = ['jhontantan@hotmail.es', 'jomar404@gmail.com']  # geomatique@agate-territoires.fr
+# ---------------------------------- #
 
 
 # ----- Lancement de l'app ----- #
@@ -49,7 +50,7 @@ class User:
         return f'<User: {self.password}>'
 
 
-user = [User(password='agate73000')]
+user = [User(password=Config.ADMIN_PASSWORD)]
 
 
 # @Routes
@@ -64,9 +65,27 @@ def page_not_found():
     return render_template('404.html')
 
 
-@app.route('/admin')
+@app.route('/admin',methods=['POST'])
 def admin_menu():
     if 'username' in session:
+        mdp_admin = request.form.get('mdp_admin')
+        mdp_admin2 = request.form.get('mdp_admin2')
+        if mdp_admin == mdp_admin2:
+            Config.ADMIN_PASSWORD = mdp_admin
+
+            fo = open('config.py', 'r')
+            ligne = linecache.getline("config.py", 29)
+
+            liste_mots = ligne.split()
+            mot2 = liste_mots[2]
+            mdp_admin = str("\'") + mdp_admin + str("\'")
+            fo.close()
+
+            modif = open('config.py', 'r+').read().replace(mot2, mdp_admin)
+            f1 = open('config.py', 'w')
+            f1.write(modif)
+            f1.close()
+
         return render_template('admin.html')
     return redirect(url_for('index'))
 
@@ -80,14 +99,18 @@ def logout():
 
 @app.route('/connexion', methods=['GET', 'POST'])
 def connexion():
+    if 'username' in session:
+        return render_template('admin.html')
     if request.method == 'POST':
         password = request.form.get('password')
         if user[0].password == password:
             session['username'] = user[0].username
-            return redirect(url_for('admin_menu'))
+            return render_template('admin.html')
         else:
             flash('error', 'danger')
     return render_template('connexion.html')
+
+
 
 
 # -------------------

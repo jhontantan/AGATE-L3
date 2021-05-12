@@ -31,3 +31,7 @@ class Config:
     MAIL_DEFAULT_SENDER = ('Outil Agate', 'adressedetest73@outlook.fr') # ('Outil Agate', 'traitement-geomatique@agate-territoires.fr')
     MAIL_MAX_EMAILS = None
     MAIL_ASCII_ATTACHMENTS = True
+
+    ADMIN_PASSWORD = '12345'
+
+    

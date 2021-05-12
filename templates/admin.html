@@ -1,14 +1,47 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <p>Connexion OK</p>
 
-    <div class="col-1">
-                <a href="/logout" >
-                     <button id="btn-logOut" name="logOut" type="button" class="btn btn-secondary">
-                        Déconnexion
-                     </button>
-                </a>
+    <div class="form-group"  tabindex="-1"  aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" action="admin" id="admin-form" name="form" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <!-- Titre de la pop up -->
+                    <h5 class="modal-title" id="exampleModalLabel">Administration</h5>
+                </div>
+                <div class="modal-body">
+                    <form class="form-group">
+                        <div class="form-group mb-2">
+                            <label for="mdp_adr_exp">Nouveau mot de passe : </label>
+                            <input type="password" id="mdp_admin" name="mdp_admin" required minlength="2" size="37">
+                            <label for="mdp_adr_exp">Confirmer le nouveau mot de passe : </label>
+                            <input type="password" id="mdp_admin2" name="mdp_admin2" required minlength="2" size="37">
+                            <button type="submit" id="btn-submit" class="btn btn-primary">Valider </button>
+                        </div>
+                     </form>
+
+
+                    <form class="form-group">
+                        <div class="form-group mb-2">
+                            <label for="adresses_dest">Adresses destinataires : </label>
+                            <input type="text" id="adresses_dest" name="adresses_dest" required minlength="50" size="37">
+                            <button type="submit" id="btn-submit" class="btn btn-primary">Valider</button>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <!-- Bouton déconnexion -->
+                    <a href="/logout" >
+                        <button type="submit" name="logOut" id="btn-submit"  class="btn btn-primary">Déconnexion</button>
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
+
 
 {% endblock %}
