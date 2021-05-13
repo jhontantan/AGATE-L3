@@ -14,11 +14,11 @@
                 <div class="modal-body">
                     <form class="form-group">
                         <div class="form-group mb-2">
-                            <label for="mdp_adr_exp">Nouveau mot de passe : </label>
-                            <input type="password" id="mdp_admin" name="mdp_admin" required minlength="2" size="37">
-                            <label for="mdp_adr_exp">Confirmer le nouveau mot de passe : </label>
-                            <input type="password" id="mdp_admin2" name="mdp_admin2" required minlength="2" size="37">
-                            <button type="submit" id="btn-submit" class="btn btn-primary">Valider </button>
+                            <label for="mdp_admin">Nouveau mot de passe : </label>
+                            <input type="password" id="mdp_admin" name="mdp_admin"  minlength="6" size="37">
+                            <label for="mdp2_admin">Confirmer le nouveau mot de passe : </label>
+                            <input type="password" id="mdp_admin2" name="mdp_admin2"  minlength="6" size="37">
+                            <button type="submit" id="btn-submit" class="btn btn-primary" name="btn-mdp_admin" value="btn-mdp_admin">Valider </button>
                         </div>
                      </form>
 
@@ -26,12 +26,20 @@
                     <form class="form-group">
                         <div class="form-group mb-2">
                             <label for="adresses_dest">Adresses destinataires : </label>
-                            <input type="text" id="adresses_dest" name="adresses_dest" required minlength="50" size="37">
+                            <input type="text" id="adresses_dest" name="adresses_dest"  minlength="50" size="37">
                             <button type="submit" id="btn-submit" class="btn btn-primary">Valider</button>
                         </div>
                     </form>
+                    <form class="form-group">
+                        <div class="form-group mb-2">
+                            <label for="mdp_adr_exp">Nouveau mot de passe : </label>
+                            <input type="password" id="mdp_adr_exp" name="mdp_adr_exp"  minlength="2" size="37">
+                            <label for="mdp2_adr_exp">Confirmer le nouveau mot de passe : </label>
+                            <input type="password" id="mdp2_adr_exp" name="mdp2_adr_exp"  minlength="2" size="37">
+                            <button type="submit" id="btn-submit" class="btn btn-primary" name="btn-mdp_adr_exp" value="btn-mdp_adr_exp">Valider </button>
+                        </div>
+                     </form>
 
-                </div>
                 <div class="modal-footer">
                     <!-- Bouton déconnexion -->
                     <a href="/logout" >

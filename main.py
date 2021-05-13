@@ -23,9 +23,6 @@ CHAMPS_JOINTURE_DEPENDANT_ANNEE = ['com', 'libcom', 'cco', 'libcco']
 CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libdep', 'reg', 'libreg']
 NOM_TABLE_REFGEO = 'v_passage'
 
-# Mail
-MAIL_ADRESSES_DEST = ['jhontantan@hotmail.es', 'jomar404@gmail.com']  # geomatique@agate-territoires.fr
-# ---------------------------------- #
 
 
 # ----- Lancement de l'app ----- #
@@ -65,28 +62,30 @@ def page_not_found():
     return render_template('404.html')
 
 
-@app.route('/admin',methods=['POST'])
+@app.route('/admin', methods=['POST'])
 def admin_menu():
     if 'username' in session:
-        mdp_admin = request.form.get('mdp_admin')
-        mdp_admin2 = request.form.get('mdp_admin2')
-        if mdp_admin == mdp_admin2:
-            Config.ADMIN_PASSWORD = mdp_admin
+        if request.form['btn-mdp_admin']:
+            mdp_admin = request.form.get('mdp_admin')
+            mdp_admin2 = request.form.get('mdp_admin2')
+            if mdp_admin == mdp_admin2:
+                Config.ADMIN_PASSWORD = mdp_admin
 
-            fo = open('config.py', 'r')
-            ligne = linecache.getline("config.py", 29)
+                fo = open('config.py', 'r')
+                ligne = linecache.getline("config.py", 35)
 
-            liste_mots = ligne.split()
-            mot2 = liste_mots[2]
-            mdp_admin = str("\'") + mdp_admin + str("\'")
-            fo.close()
+                liste_mots = ligne.split()
+                mot2 = liste_mots[2]
+                mdp_admin = str("\'") + mdp_admin + str("\'")
+                fo.close()
 
-            modif = open('config.py', 'r+').read().replace(mot2, mdp_admin)
-            f1 = open('config.py', 'w')
-            f1.write(modif)
-            f1.close()
-
-        return render_template('admin.html')
+                modif = open('config.py', 'r+').read().replace(mot2, mdp_admin)
+                f1 = open('config.py', 'w')
+                f1.write(modif)
+                f1.close()
+            return render_template('admin.html')
+        if request.form['btn-mdp_adr_exp']:
+            return 'test'
     return redirect(url_for('index'))
 
 
