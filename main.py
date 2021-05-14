@@ -420,6 +420,7 @@ def mise_en_base(table_name, dataframe):
         dataframe.to_sql(table_name, conn, if_exists='fail', index=False, dtype=dataframe_types)
     except ValueError:
         # print("nom en double")
+        print("Deja en base") # <--- C'est ici que ça retourne si c pas en base
         return 1
     except Exception as ex:
         print(ex)  # TODO : à remplacer par un feedback au front
@@ -527,7 +528,7 @@ def cleanTempDirectory():
 
 def send_email(file_name):
     file_name_affichage = get_name_mail(file_name)
-    msg = Message('Outil Agate - Traitement : ' + file_name_affichage, recipients=MAIL_ADRESSES_DEST)
+    msg = Message('Outil Agate - Traitement : ' + file_name_affichage, recipients=Config.MAIL_ADRESSES_DEST)
     msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
     with app.open_resource(file_name) as fp:
         msg.attach(file_name_affichage, "text/csv", fp.read())
@@ -546,7 +547,7 @@ def get_name(name):
             return name[ind_l + 1:len(name)]
 
 def get_name_mail(name):
-    res = ""
+    res = None
     for ind_l in reversed(range(len(name) - 1)):
         if name[ind_l] == '\\':
             res =  name[ind_l + 1:len(name)]
