@@ -321,7 +321,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
 
     # Dataframe intermediaire contenant code INSEE et comXX.
     # Permet les jointures et groupby sans entrainer tous les autres champs
-    jointure_op = pd.DataFrame(jointure[[COM_JOINTURE, "com" + year_ref]], columns=[COM_JOINTURE, "com" + year_ref])
+    jointure_op = pd.DataFrame(jointure[[COM_JOINTURE, comXX]], columns=[COM_JOINTURE, comXX])
 
     # Somme
 
@@ -331,7 +331,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     df_sum = df_sum.drop(columns=[COM_JOINTURE])
     df_sum = df_sum.groupby(by=comXX, dropna=False, as_index=False).sum()
     try:
-        df_sum = pd.DataFrame(df_sum[["com" + year_ref] + tab_sum], columns=["com" + year_ref] + tab_sum)
+        df_sum = pd.DataFrame(df_sum[[comXX] + tab_sum], columns=[comXX] + tab_sum)
     except KeyError:
         return json.dumps("err_jointure")
 
@@ -356,9 +356,9 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     # Sum & Max & Min
     if tab_sum and tab_max and tab_min:
         try:
-            df_op = df_sum.set_index("com" + year_ref).join(df_max.set_index("com" + year_ref), how='inner',
-                                                            on="com" + year_ref)
-            df_op = df_op.join(df_min.set_index("com" + year_ref), how='inner', on="com" + year_ref)
+            df_op = df_sum.set_index(comXX).join(df_max.set_index(comXX), how='inner',
+                                                            on=comXX)
+            df_op = df_op.join(df_min.set_index(comXX), how='inner', on=comXX)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MAX_MIN")
         except KeyError:
@@ -366,24 +366,24 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     # Sum & Max
     elif tab_sum and tab_max:
         try:
-            df_op = df_sum.set_index("com" + year_ref).join(df_max.set_index("com" + year_ref), how='inner',
-                                                            on="com" + year_ref)
+            df_op = df_sum.set_index(comXX).join(df_max.set_index(comXX), how='inner',
+                                                            on=comXX)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MAX")
         except KeyError:
             return json.dumps("err_join_OP")
     elif tab_sum and tab_min:
         try:
-            df_op = df_sum.set_index("com" + year_ref).join(df_min.set_index("com" + year_ref), how='inner',
-                                                            on="com" + year_ref)
+            df_op = df_sum.set_index(comXX).join(df_min.set_index(comXX), how='inner',
+                                                            on=comXX)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MIN")
         except KeyError:
             return json.dumps("err_join_OP")
     elif tab_max and tab_min:
         try:
-            df_op = df_max.set_index("com" + year_ref).join(df_min.set_index("com" + year_ref), how='inner',
-                                                            on="com" + year_ref)
+            df_op = df_max.set_index(comXX).join(df_min.set_index(comXX), how='inner',
+                                                            on=comXX)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MIN")
         except KeyError:
@@ -401,8 +401,8 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     jointure = jointure.drop(columns=[COM_JOINTURE])
 
     # Jointure sur com courant de df_op sur jointure
-    df_res = jointure.set_index("com" + year_ref).join(df_op.set_index("com" + year_ref), how='inner',
-                                                       on="com" + year_ref)
+    df_res = jointure.set_index(comXX).join(df_op.set_index(comXX), how='inner',
+                                                       on=comXX)
 
     # On enlève le com courant de l'index (il repasse en colonne)
     df_res = df_res.reset_index()
