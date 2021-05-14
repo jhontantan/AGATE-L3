@@ -10,6 +10,8 @@ from sqlalchemy import create_engine, exc
 from threading import Thread
 from config import Config
 from unidecode import unidecode
+import win32api
+
 
 # ---------- Informations ---------- #
 # Prérequis
@@ -89,6 +91,9 @@ def admin_menu():
                 f1 = open('config.py', 'w')
                 f1.write(modif)
                 f1.close()
+                flash('Le mot de passe à été changé avec succès', 'success')
+                return render_template('admin.html')
+            flash('Les mots de passe saisis ne sont pas identiques  ', 'danger')
             return render_template('admin.html')
 
         # PARTIE nouveau mot de passe adresse expeditrice #
@@ -113,6 +118,9 @@ def admin_menu():
                 f1 = open('config.py', 'w')
                 f1.write(modif2)
                 f1.close()
+                flash('Le mot de passe à été changé avec succès', 'success')
+                return render_template('admin.html')
+            flash('Les mots de passe saisis ne sont pas identiques  ', 'danger')
 
             return render_template('admin.html')
 
@@ -133,7 +141,7 @@ def connexion():
             session['username'] = user[0].username
             return render_template('admin.html')
         else:
-            flash('error', 'danger')
+            flash('Mot de passe incorrect', 'danger')
     return render_template('connexion.html')
 
 # -------------------

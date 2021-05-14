@@ -33,4 +33,4 @@ class Config:
     MAIL_ASCII_ATTACHMENTS = True
 
     MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']  # geomatique@agate-territoires.fr
-    ADMIN_PASSWORD = '123456'
+    ADMIN_PASSWORD = '1234567'
