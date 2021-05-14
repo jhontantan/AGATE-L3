@@ -65,35 +65,64 @@ def page_not_found():
     return render_template('404.html')
 
 
-@app.route('/admin',methods=['POST'])
+@app.route('/admin', methods=['POST'])
 def admin_menu():
+    global liste_mots
     if 'username' in session:
-        mdp_admin = request.form.get('mdp_admin')
-        mdp_admin2 = request.form.get('mdp_admin2')
-        if mdp_admin == mdp_admin2:
-            Config.ADMIN_PASSWORD = mdp_admin
 
-            fo = open('config.py', 'r')
-            ligne = linecache.getline("config.py", 29)
+        # PARTIE nouveau mot de passe admin #
+        if request.form.get("mdp_admin"):
+            mdp_admin = request.form.get('mdp_admin')
+            mdp_admin2 = request.form.get('mdp_admin2')
+            if mdp_admin == mdp_admin2 and mdp_admin != "":
 
-            liste_mots = ligne.split()
-            mot2 = liste_mots[2]
-            mdp_admin = str("\'") + mdp_admin + str("\'")
-            fo.close()
+                fo = open('config.py', 'r')
+                #ligne = linecache.getline("config.py", 35)
 
-            modif = open('config.py', 'r+').read().replace(mot2, mdp_admin)
-            f1 = open('config.py', 'w')
-            f1.write(modif)
-            f1.close()
+                lines = fo.readlines()
+                for line in lines:
+                    if "ADMIN_PASSWORD" in line:
+                        liste_mots = line.split()
 
-        return render_template('admin.html')
-    return redirect(url_for('index'))
+                mot2 = liste_mots[2]
+                mdp_admin = str("\'") + mdp_admin + str("\'")
+                fo.close()
 
+                modif = open('config.py', 'r+').read().replace(mot2, mdp_admin)
+                f1 = open('config.py', 'w')
+                f1.write(modif)
+                f1.close()
+            return render_template('admin.html')
 
-@app.route('/logout')
-def logout():
-    flash('Vous êtes déconnecté')
-    session.pop('username', None)
+        # PARTIE nouveau mot de passe adresse expeditrice #
+        if request.form.get("mdp_adr_exp"):
+            mdp_adr_exp = request.form.get('mdp_adr_exp')
+            mdp_adr_exp2 = request.form.get('mdp_adr_exp2')
+
+            if mdp_adr_exp == mdp_adr_exp2 and mdp_adr_exp != "":
+
+                fo = open('config.py', 'r')
+                #ligne2 = linecache.getline("config.py", 25)
+                lignes = fo.readlines()
+                for ligne in lignes:
+                    if "MAIL_PASSWORD" in ligne:
+                        liste_mots = ligne.split()
+
+                mot = liste_mots[2]
+                mdp_adr_exp = str("\'") + mdp_adr_exp + str("\'")
+                fo.close()
+
+                modif2 = open('config.py', 'r+').read().replace(mot, mdp_adr_exp)
+                f1 = open('config.py', 'w')
+                f1.write(modif2)
+                f1.close()
+
+            return render_template('admin.html')
+
+        if request.form.get("logout"):
+            session.pop('username', None)
+            return redirect(url_for('index'))
+
     return redirect(url_for('index'))
 
 
@@ -109,9 +138,6 @@ def connexion():
         else:
             flash('error', 'danger')
     return render_template('connexion.html')
-
-
-
 
 # -------------------
 # IMPORT D'UN FICHIER

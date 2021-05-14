@@ -67,7 +67,7 @@ header {
     text-align: center;
 }
 
-#btn-submit, #btn-op-submit {
+#btn-submit, #btn-op-submit, #btn-pwd_admin, #btn-adr_dest, #btn-mdp_adr_exp {
     text-transform: capitalize !important;
     width: auto !important;
 }

@@ -22,7 +22,7 @@ class Config:
     MAIL_USE_SSL = False
 
     MAIL_USERNAME = 'adressedetest73@outlook.fr' # 'traitement-geomatique@agate-territoires.fr'
-    MAIL_PASSWORD = 'motdepasse73' # 'Won06597'
+    MAIL_PASSWORD = 'agate123' # 'Won06597'
 
     # Options pour le debug
     MAIL_DEBUG = True
@@ -32,6 +32,4 @@ class Config:
     MAIL_MAX_EMAILS = None
     MAIL_ASCII_ATTACHMENTS = True
 
-    ADMIN_PASSWORD = '12345'
-
-    
+    ADMIN_PASSWORD = '123456789b'
