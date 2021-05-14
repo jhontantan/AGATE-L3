@@ -23,9 +23,6 @@ CHAMPS_JOINTURE_DEPENDANT_ANNEE = ['com', 'libcom', 'cco', 'libcco']
 CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libdep', 'reg', 'libreg']
 NOM_TABLE_REFGEO = 'v_passage'
 
-# Mail
-MAIL_ADRESSES_DEST = ['jhontantan@hotmail.es', 'jomar404@gmail.com']  # geomatique@agate-territoires.fr
-# ---------------------------------- #
 
 
 # ----- Lancement de l'app ----- #
@@ -318,6 +315,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
 
     # Champs GroupBy
     groupby = list_with_year_to_list_with_choosen_year(CHAMPS_JOINTURE_DEPENDANT_ANNEE, year_ref) + CHAMPS_JOINTURE
+    comXX = get_com(groupby)
 
     ### Gestion des différentes opérations
 
@@ -331,7 +329,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     df_sum = jointure_op.set_index(COM_JOINTURE).join(df_sum.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
     df_sum = df_sum.reset_index()
     df_sum = df_sum.drop(columns=[COM_JOINTURE])
-    df_sum = df_sum.groupby(by="com"+year_ref, dropna=False, as_index=False).sum()
+    df_sum = df_sum.groupby(by=comXX, dropna=False, as_index=False).sum()
     try:
         df_sum = pd.DataFrame(df_sum[["com" + year_ref] + tab_sum], columns=["com" + year_ref] + tab_sum)
     except KeyError:
@@ -342,16 +340,16 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     df_max = jointure_op.set_index(COM_JOINTURE).join(df_max.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
     df_max = df_max.reset_index()
     df_max = df_max.drop(columns=[COM_JOINTURE])
-    df_max = df_max.groupby(by="com"+year_ref, dropna=False, as_index=False).max()
-    df_max = pd.DataFrame(df_max[["com"+year_ref]+tab_max], columns=["com"+year_ref]+tab_max)
+    df_max = df_max.groupby(by=comXX, dropna=False, as_index=False).max()
+    df_max = pd.DataFrame(df_max[[comXX]+tab_max], columns=[comXX]+tab_max)
 
     # Min
     df_min = pd.DataFrame(df_import[[COM_JOINTURE] + tab_min], columns=[COM_JOINTURE] + tab_min)
     df_min = jointure_op.set_index(COM_JOINTURE).join(df_min.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
     df_min = df_min.reset_index()
     df_min = df_min.drop(columns=[COM_JOINTURE])
-    df_min = df_min.groupby(by="com"+year_ref, dropna=False, as_index=False).min()
-    df_min = pd.DataFrame(df_min[["com"+year_ref]+tab_min], columns=["com"+year_ref]+tab_min)
+    df_min = df_min.groupby(by=comXX, dropna=False, as_index=False).min()
+    df_min = pd.DataFrame(df_min[[comXX]+tab_min], columns=[comXX]+tab_min)
 
     # Fusion des différentes opérations
     df_op = pd.DataFrame
@@ -447,6 +445,7 @@ def mise_en_base(table_name, dataframe):
         dataframe.to_sql(table_name, conn, if_exists='fail', index=False, dtype=dataframe_types)
     except ValueError:
         # print("nom en double")
+        print("Deja en base") # <--- C'est ici que ça retourne si c pas en base
         return 1
     except Exception as ex:
         print(ex)  # TODO : à remplacer par un feedback au front
@@ -466,6 +465,9 @@ def df_to_sql(dfparam):
         elif "int" in str(j):
             res.update({i: sqla.types.INT()})
     return res
+
+def get_com(liste):
+    return liste[0]
 
 # Permet de créer une chaine pour requête sql à partir d'une liste
 def list_to_str(liste):
@@ -554,7 +556,7 @@ def cleanTempDirectory():
 
 def send_email(file_name):
     file_name_affichage = get_name_mail(file_name)
-    msg = Message('Outil Agate - Traitement : ' + file_name_affichage, recipients=MAIL_ADRESSES_DEST)
+    msg = Message('Outil Agate - Traitement : ' + file_name_affichage, recipients=Config.MAIL_ADRESSES_DEST)
     msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
     with app.open_resource(file_name) as fp:
         msg.attach(file_name_affichage, "text/csv", fp.read())
@@ -573,7 +575,7 @@ def get_name(name):
             return name[ind_l + 1:len(name)]
 
 def get_name_mail(name):
-    res = ""
+    res = None
     for ind_l in reversed(range(len(name) - 1)):
         if name[ind_l] == '\\':
             res =  name[ind_l + 1:len(name)]
