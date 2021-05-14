@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, exc
 from threading import Thread
 from config import Config
 from unidecode import unidecode
-import win32api
+import hashlib
 
 
 # ---------- Informations ---------- #
@@ -74,7 +74,8 @@ def admin_menu():
             mdp_admin = request.form.get('mdp_admin')
             mdp_admin2 = request.form.get('mdp_admin2')
             if mdp_admin == mdp_admin2 and mdp_admin != "":
-
+                h_mdp_admin = hashlib.md5(mdp_admin.encode('utf8'))
+                mdp_admin = h_mdp_admin.hexdigest()
                 fo = open('config.py', 'r')
                 #ligne = linecache.getline("config.py", 35)
 
@@ -137,6 +138,8 @@ def connexion():
         return render_template('admin.html')
     if request.method == 'POST':
         password = request.form.get('password')
+        h_mdp_admin = hashlib.md5(password.encode('utf8'))
+        password = h_mdp_admin.hexdigest()
         if user[0].password == password:
             session['username'] = user[0].username
             return render_template('admin.html')
