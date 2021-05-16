@@ -74,6 +74,7 @@ def admin_menu():
             mdp_admin = request.form.get('mdp_admin')
             mdp_admin2 = request.form.get('mdp_admin2')
             if mdp_admin == mdp_admin2 and mdp_admin != "":
+                Config.ADMIN_PASSWORD = mdp_admin
                 h_mdp_admin = hashlib.md5(mdp_admin.encode('utf8'))
                 mdp_admin = h_mdp_admin.hexdigest()
                 fo = open('config.py', 'r')
@@ -103,7 +104,7 @@ def admin_menu():
             mdp_adr_exp2 = request.form.get('mdp_adr_exp2')
 
             if mdp_adr_exp == mdp_adr_exp2 and mdp_adr_exp != "":
-
+                Config.MAIL_PASSWORD = mdp_adr_exp
                 fo = open('config.py', 'r')
                 #ligne2 = linecache.getline("config.py", 25)
                 lignes = fo.readlines()
@@ -125,11 +126,44 @@ def admin_menu():
 
             return render_template('admin.html')
 
+        if request.form.get("add_dest"):
+            add_dest = request.form.get('add_dest')
+            Config.MAIL_ADRESSES_DEST.append(add_dest)
+            print(Config.MAIL_ADRESSES_DEST)
+
+            add_dest = ','.join(f"'{w}'" for w in Config.MAIL_ADRESSES_DEST)
+            # add_dest = ', '.join(Config.MAIL_ADRESSES_DEST)
+            fo = open('config.py', 'r')
+            # ligne = linecache.getline("config.py", 35)
+
+            lines = fo.readlines()
+            for line in lines:
+                if "MAIL_ADRESSES_DEST" in line:
+                         liste_mots = line.split()
+
+            mot2 = liste_mots[2]
+            print(mot2)
+            add_dest = str("[") + add_dest + str("]")
+            fo.close()
+
+            modif = open('config.py', 'r+').read().replace(mot2, add_dest)
+            f1 = open('config.py', 'w')
+            f1.write(modif)
+            f1.close()
+            flash('Le mot de passe à été changé avec succès', 'success')
+
+            return render_template('admin.html')
+
+
         if request.form.get("logout"):
             session.pop('username', None)
             return redirect(url_for('index'))
 
     return redirect(url_for('index'))
+
+@app.route('/tableauAddresses' )
+def tableauAdd():
+    return 'test'
 
 
 @app.route('/connexion', methods=['GET', 'POST'])

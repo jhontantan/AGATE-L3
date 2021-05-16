@@ -38,9 +38,16 @@
 
                         <div class="modal-body">
                             <div class="form-group mb-2">
-                                <label>Adresses destinataires : </label>
-                                <input type="text" id="adresses_dest" name="adresses_dest" minlength="20" size="37">
-                                <button type="submit" id="btn-adr_dest" class="btn btn-primary">Valider</button>
+                                <label for="drp_dwn_op">Adresses destinataires :</label>
+                                <select name="operation" id="drp_dwn_op">
+                                    <option value="mail" selected>mail</option>
+
+
+                                </select>
+                                <button type="submit" id="btn-adr_dest" class="btn btn-primary">Effacer l'addresse</button>
+                                <label>Ajouter une Adresse destinataire : </label>
+                                <input type="email" id="add_dest" name="add_dest" minlength="3" size="37">
+                                <button type="submit" id="btn-adr_dest" class="btn btn-primary" name="add_dest" value="add_dest">Valider</button>
                             </div>
                         </div>
 
