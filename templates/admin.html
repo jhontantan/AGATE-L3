@@ -34,21 +34,21 @@
                                 <button type="submit" id="btn-pwd_admin" class="btn btn-primary" name="mdp_admin" value="mdp_admin">Valider </button>
                             </div>
                         </div>
-
-
                         <div class="modal-body">
                             <div class="form-group mb-2">
-                                <label for="drp_dwn_op">Adresses destinataires :</label>
-                                <select name="operation" id="drp_dwn_op">
-                                    <option value="mail" selected>mail</option>
-
-
-                                </select>
-                            <button type="submit" id="btn-adr_dest" class="btn btn-primary">Effacer l'addresse</button>
+                                <div id="tableauModifAddresse">
+<label for='drp_dwn_op'>Adresses destinataires :</label><select name='operation' id='drp_dwn_op'><option value='0'> adressedetest73@outlook.fr </option></select><button type='submit' id='btn-adr_dest' class='btn btn-primary' name='del_mail' value='del_mail'>Effacer Mail</button>
+                                </div>
+                              <a href="/tableauAddresses" target="_blank" >
+                                  <button type="submit" id="btn-adr_dest" class="btn btn-primary" name="tableauAddresses" value="tableauAddresses" >Modification Addreses Destinataires</button>
+                              </a>
+                            </div>
+                        </div>
+                        <div class="modal-body">
                                 <label>Ajouter une Adresse destinataire : </label>
                                 <input type="email" id="add_dest" name="add_dest" minlength="3" size="37">
                                 <button type="submit" id="btn-adr_dest" class="btn btn-primary" name="add_dest" value="add_dest">Valider</button>
-                            </div>
+
                         </div>
 
                         <div class="modal-body">
@@ -72,9 +72,15 @@
         </div>
     </div>
     <script>
+
             function delete_flash(flash) {
                 $(flash).parent().remove()
             }
+
+            (function(){
+                 $("#includedContent").load("404.html")
+            });
+
     </script>
 
 {% endblock %}

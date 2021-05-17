@@ -155,6 +155,8 @@ def admin_menu():
 
             return render_template('admin.html')
 
+        if request.form.get("tableauAddresses"):
+            return redirect(url_for('tableauAddresses'))
 
         if request.form.get("logout"):
             session.pop('username', None)
@@ -162,27 +164,46 @@ def admin_menu():
 
     return redirect(url_for('index'))
 
-@app.route('/tableauAddresses' )
+@app.route('/tableauAddresses')
 def tableauAddresses():
     html_output = ''
-    mails = []
-    # list_add_dest = Config.MAIL_ADRESSES_DEST
-    # print("<ul>")
-    # for s in list_add_dest:
-    #     ul = "<li>" + str(s) + "</li>"
-    #     print(ul)
-    # print("</ul>")
     list_add_dest = Config.MAIL_ADRESSES_DEST
-    for char in list_add_dest:
 
-            list_add_dest.replace(char, '')
-    print(list_add_dest)
+    html_output += f"<label for='drp_dwn_op'>Adresses destinataires :</label>"
+    html_output += f"<select name='operation' id='drp_dwn_op'>"
 
-    # mot = liste_mails[1]
-    # print(mot)
-        # mot=liste_mails[2]
-        # add_dest = ','.join(f"'{w}'" for w in Config.MAIL_ADRESSES_DEST)
-    return 'test'
+    for char in range(len(list_add_dest)):
+        html_output += f"<option value='{char}'> {list_add_dest[char]} </option>"
+
+    html_output += f"</select>"
+    html_output += f"<button type='submit' id='btn-adr_dest' class='btn btn-primary' name='del_mail' value='del_mail'>Effacer Mail</button>"
+    html_output += f"\n"
+
+
+    fo = open('templates/admin.html', 'r')
+    # ligne2 = linecache.getline("config.py", 25)
+    lignes = fo.readlines()
+    count = 0
+
+    for ligne in lignes:
+        count +=1
+        if "tableauModifAddresse" in ligne:
+            print(count)
+            ligne
+            break
+
+    # count +=1
+    # lignes[count]='test\n'
+    lignes[count]=html_output
+
+    #modif = open('templates/admin.html', 'r+').replace(ligne[count], 'test')
+
+    f1 = open('templates/admin.html', 'w')
+    f1.writelines(lignes)
+    f1.close()
+    flash('Le mail à été ajouté avec succès', 'success')
+
+    return render_template('admin.html')
 
 
 @app.route('/connexion', methods=['GET', 'POST'])
@@ -200,7 +221,7 @@ def connexion():
             else:
                 flash('Mot de passe incorrect', 'danger')
         if request.form.get("retour"):
-            return redirect(url_for('tableauAddresses'))
+            return redirect(url_for('index'))
     return render_template('connexion.html')
 
 # -------------------
