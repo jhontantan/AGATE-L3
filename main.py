@@ -10,6 +10,10 @@ from sqlalchemy import create_engine, exc
 from threading import Thread
 from config import Config
 from unidecode import unidecode
+import hashlib
+from tabulate import tabulate
+
+
 
 # ---------- Informations ---------- #
 # Prérequis
@@ -66,13 +70,14 @@ def page_not_found():
 def admin_menu():
     global liste_mots
     if 'username' in session:
-
         # PARTIE nouveau mot de passe admin #
         if request.form.get("mdp_admin"):
             mdp_admin = request.form.get('mdp_admin')
             mdp_admin2 = request.form.get('mdp_admin2')
             if mdp_admin == mdp_admin2 and mdp_admin != "":
-
+                Config.ADMIN_PASSWORD = mdp_admin
+                h_mdp_admin = hashlib.md5(mdp_admin.encode('utf8'))
+                mdp_admin = h_mdp_admin.hexdigest()
                 fo = open('config.py', 'r')
                 # ligne = linecache.getline("config.py", 35)
 
@@ -89,6 +94,9 @@ def admin_menu():
                 f1 = open('config.py', 'w')
                 f1.write(modif)
                 f1.close()
+                flash('Le mot de passe à été changé avec succès', 'success')
+                return render_template('admin.html')
+            flash('Les mots de passe saisis ne sont pas identiques  ', 'danger')
             return render_template('admin.html')
 
         # PARTIE nouveau mot de passe adresse expeditrice #
@@ -97,7 +105,7 @@ def admin_menu():
             mdp_adr_exp2 = request.form.get('mdp_adr_exp2')
 
             if mdp_adr_exp == mdp_adr_exp2 and mdp_adr_exp != "":
-
+                Config.MAIL_PASSWORD = mdp_adr_exp
                 fo = open('config.py', 'r')
                 #ligne2 = linecache.getline("config.py", 25)
                 lignes = fo.readlines()
@@ -113,8 +121,70 @@ def admin_menu():
                 f1 = open('config.py', 'w')
                 f1.write(modif2)
                 f1.close()
+                flash('Le mot de passe à été changé avec succès', 'success')
+                return render_template('admin.html')
+            flash('Les mots de passe saisis ne sont pas identiques  ', 'danger')
 
             return render_template('admin.html')
+
+        if request.form.get("add_dest"):
+            add_dest = request.form.get('add_dest')
+            Config.MAIL_ADRESSES_DEST.append(add_dest)
+
+            add_dest = ','.join(f"'{w}'" for w in Config.MAIL_ADRESSES_DEST)
+            # add_dest = ', '.join(Config.MAIL_ADRESSES_DEST)
+            fo = open('config.py', 'r')
+            # ligne = linecache.getline("config.py", 35)
+
+            lines = fo.readlines()
+            for line in lines:
+                if "MAIL_ADRESSES_DEST" in line:
+                         liste_mots = line.split()
+
+            mot2 = liste_mots[2]
+            print(mot2)
+            add_dest = str("[") + add_dest + str("]")
+            fo.close()
+
+            modif = open('config.py', 'r+').read().replace(mot2, add_dest)
+            f1 = open('config.py', 'w')
+            f1.write(modif)
+            f1.close()
+            flash('Le mail à été ajouté avec succès', 'success')
+
+            return redirect(url_for('tableauAddresses'))
+
+        if request.form.get("tableauAddresses"):
+            return redirect(url_for('tableauAddresses'))
+
+        if request.form.get("del_mail"):
+            mail_a_effacer =request.form.get('operation')
+            # print(mail_a_effacer)
+            # print(Config.MAIL_ADRESSES_DEST)
+            Config.MAIL_ADRESSES_DEST.remove(mail_a_effacer)
+
+            fo = open('config.py', 'r')
+
+            lines = fo.readlines()
+            for line in lines:
+                if "MAIL_ADRESSES_DEST" in line:
+                         liste_mots = line.split()
+
+            mot2 = liste_mots[2]
+            print(mot2)
+            list_temp_mail = "', '".join(str(x) for x in Config.MAIL_ADRESSES_DEST)
+            print(list_temp_mail)
+            list_temp_mail = str("['") + list_temp_mail + str("']")
+            # add_dest = str("[") + add_dest + str("]")
+            fo.close()
+
+            # modif = open('config.py', 'r+').read().replace(mot2, '')
+            # f1 = open('config.py', 'w')
+            # f1.write(modif)
+            # f1.close()
+            # flash('Le mail à été ajouté avec succès', 'success')
+
+            return redirect(url_for('tableauAddresses'))
 
         if request.form.get("logout"):
             session.pop('username', None)
@@ -123,17 +193,58 @@ def admin_menu():
     return redirect(url_for('index'))
 
 
+    # Menu déroulant avec les addresses destinataires
+@app.route('/tableauAddresses')
+def tableauAddresses():
+    html_output = ''
+    list_add_dest = Config.MAIL_ADRESSES_DEST
+
+    html_output += f"<label for='drp_dwn_mail'>Adresses destinataires :</label>"
+    html_output += f"<select name='operation' id='drp_dwn_mail'>"
+
+    for char in range(len(list_add_dest)):
+        html_output += f"<option value='{list_add_dest[char]}'> {list_add_dest[char]} </option>"
+
+    html_output += f"</select>"
+    html_output += f"<button type='submit' id='btn-adr_dest' class='btn btn-primary' name='del_mail' value='del_mail'>Effacer Mail</button>"
+    html_output += f"\n"
+
+
+    fo = open('templates/admin.html', 'r')
+    lignes = fo.readlines()
+    count = 0
+
+    for ligne in lignes:
+        count +=1
+        if "tableauModifAddresse" in ligne:
+            ligne
+            break
+
+    lignes[count]=html_output
+
+    f1 = open('templates/admin.html', 'w')
+    f1.writelines(lignes)
+    f1.close()
+
+    return render_template('admin.html')
+
+
 @app.route('/connexion', methods=['GET', 'POST'])
 def connexion():
     if 'username' in session:
         return render_template('admin.html')
     if request.method == 'POST':
-        password = request.form.get('password')
-        if user[0].password == password:
-            session['username'] = user[0].username
-            return render_template('admin.html')
-        else:
-            flash('error', 'danger')
+        if request.form.get("password"):
+            password = request.form.get('password')
+            h_mdp_admin = hashlib.md5(password.encode('utf8'))
+            password = h_mdp_admin.hexdigest()
+            if user[0].password == password:
+                session['username'] = user[0].username
+                return render_template('admin.html')
+            else:
+                flash('Mot de passe incorrect', 'danger')
+        if request.form.get("retour"):
+            return redirect(url_for('index'))
     return render_template('connexion.html')
 
 # -------------------

@@ -42,6 +42,7 @@ header {
     padding-left: 0 !important;
 }
 
+#btn-export, #btn-import, #btn-update, #btn-submit, #btn-op-submit, #btn-logOut, #btn-connexion, #btn-pwd_admin, #btn-adr_dest, #btn-mdp_adr_exp {
 #btn-export, #btn-import, #btn-update, #btn-submit, #btn-op-submit, #btn-logOut, #btn-name {
     background-color: #313E47 !important;
     margin: 0 !important;
@@ -54,25 +55,15 @@ header {
     vertical-align: top;
 }
 
-#btn-connexion {
-    background-color: #313E47 !important;
-    margin: 0 !important;
-    text-transform: uppercase;
-    color: #FFFFFF;
-    font-size: 0.9vw !important;
-    border: none !important;
-    width: 125%;
-    height: auto;
-    vertical-align: top;
-    text-align: center;
-}
 
+#btn-submit, #btn-op-submit, #btn-connexion, #btn-pwd_admin, #btn-adr_dest, #btn-mdp_adr_exp {
 #btn-submit, #btn-op-submit, #btn-pwd_admin, #btn-adr_dest, #btn-mdp_adr_exp, #btn-name {
     text-transform: capitalize !important;
     width: auto !important;
 }
 
 #btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover, #btn-op-submit:hover, #btn-connexion:hover, #btn-logOut :hover, #btn-name :hover {
+#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-connexion:hover, #btn-submit:hover, #btn-op-submit:hover, #btn-connexion:hover, #btn-logOut :hover {
     background-color: #577B94 !important;
 }
 
