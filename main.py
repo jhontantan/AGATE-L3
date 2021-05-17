@@ -11,6 +11,8 @@ from threading import Thread
 from config import Config
 from unidecode import unidecode
 import hashlib
+from tabulate import tabulate
+
 
 
 # ---------- Informations ---------- #
@@ -129,7 +131,6 @@ def admin_menu():
         if request.form.get("add_dest"):
             add_dest = request.form.get('add_dest')
             Config.MAIL_ADRESSES_DEST.append(add_dest)
-            print(Config.MAIL_ADRESSES_DEST)
 
             add_dest = ','.join(f"'{w}'" for w in Config.MAIL_ADRESSES_DEST)
             # add_dest = ', '.join(Config.MAIL_ADRESSES_DEST)
@@ -150,7 +151,7 @@ def admin_menu():
             f1 = open('config.py', 'w')
             f1.write(modif)
             f1.close()
-            flash('Le mot de passe à été changé avec succès', 'success')
+            flash('Le mail à été ajouté avec succès', 'success')
 
             return render_template('admin.html')
 
@@ -162,7 +163,25 @@ def admin_menu():
     return redirect(url_for('index'))
 
 @app.route('/tableauAddresses' )
-def tableauAdd():
+def tableauAddresses():
+    html_output = ''
+    mails = []
+    # list_add_dest = Config.MAIL_ADRESSES_DEST
+    # print("<ul>")
+    # for s in list_add_dest:
+    #     ul = "<li>" + str(s) + "</li>"
+    #     print(ul)
+    # print("</ul>")
+    list_add_dest = Config.MAIL_ADRESSES_DEST
+    for char in list_add_dest:
+
+            list_add_dest.replace(char, '')
+    print(list_add_dest)
+
+    # mot = liste_mails[1]
+    # print(mot)
+        # mot=liste_mails[2]
+        # add_dest = ','.join(f"'{w}'" for w in Config.MAIL_ADRESSES_DEST)
     return 'test'
 
 
@@ -171,14 +190,17 @@ def connexion():
     if 'username' in session:
         return render_template('admin.html')
     if request.method == 'POST':
-        password = request.form.get('password')
-        h_mdp_admin = hashlib.md5(password.encode('utf8'))
-        password = h_mdp_admin.hexdigest()
-        if user[0].password == password:
-            session['username'] = user[0].username
-            return render_template('admin.html')
-        else:
-            flash('Mot de passe incorrect', 'danger')
+        if request.form.get("password"):
+            password = request.form.get('password')
+            h_mdp_admin = hashlib.md5(password.encode('utf8'))
+            password = h_mdp_admin.hexdigest()
+            if user[0].password == password:
+                session['username'] = user[0].username
+                return render_template('admin.html')
+            else:
+                flash('Mot de passe incorrect', 'danger')
+        if request.form.get("retour"):
+            return redirect(url_for('tableauAddresses'))
     return render_template('connexion.html')
 
 # -------------------
