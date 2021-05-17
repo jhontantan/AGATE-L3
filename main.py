@@ -162,18 +162,50 @@ def admin_menu():
             return redirect(url_for('tableauAddresses'))
 
         if request.form.get("jointure"):
+            libcom = request.form.get('lib_com')
+            list_temp = []
+            list_temp.append(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[0])
+            list_temp.extend(convert(libcom))
+            fichier = open('config.py', 'r')
+            lines = fichier.readlines()
+            count = 0
+            for ligne in lines:
+                if "CHAMPS_JOINTURE_DEPENDANT_ANNEE" in ligne:
+                    ligne
+                    break
+                count += 1
+            line_temp = f"    CHAMPS_JOINTURE_DEPENDANT_ANNEE = {list_temp} \n"
+            lines[count] = line_temp
+
+            fichier.close()
+
+            f1 = open('config.py', 'w')
+            f1.writelines(lines)
+            f1.close()
+            return redirect(url_for('tableauAddresses'))
+
+        if request.form.get("jointure_com"):
+
             com = request.form.get('com')
-            libcom = request.form.get('libcom')
-            cco = request.form.get('cco')
-            libcco = request.form.get('libcco')
-
             Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[0] = com
-            Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[1] = libcom
-            Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[2] = cco
-            Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[3] = libcco
 
-           # fichier = open('config.py', 'r')
+            fichier = open('config.py', 'r')
+            lines = fichier.readlines()
+            count = 0
+            for ligne in lines:
+                if "CHAMPS_JOINTURE_DEPENDANT_ANNEE" in ligne:
+                    ligne
+                    break
+                count += 1
+            print(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE)
+            line_temp = f"    CHAMPS_JOINTURE_DEPENDANT_ANNEE = {Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE} \n"
+            lines[count] = line_temp
 
+            fichier.close()
+
+            f1 = open('config.py', 'w')
+            f1.writelines(lines)
+            f1.close()
             return redirect(url_for('tableauAddresses'))
 
         if request.form.get("logout"):
@@ -184,6 +216,9 @@ def admin_menu():
 
     # Menu déroulant avec les addresses destinataires
 
+def convert(string):
+    li = list(string.split(","))
+    return li
 
 @app.route('/tableauAddresses')
 def tableauAddresses():
