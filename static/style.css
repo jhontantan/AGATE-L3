@@ -42,7 +42,7 @@ header {
     padding-left: 0 !important;
 }
 
-#btn-export, #btn-import, #btn-update, #btn-submit, #btn-op-submit, #btn-logOut, #btn-connexion, #btn-pwd_admin, #btn-adr_dest, #btn-mdp_adr_exp, #btn-name {
+#btn-export, #btn-import, #btn-update, #btn-submit, #btn-op-submit, #btn-logOut, #btn-connexion, #btn-connecter, #btn-pwd_admin, #btn-adr_dest, #btn-mdp_adr_exp, #btn-name {
     background-color: #313E47 !important;
     margin: 0 !important;
     text-transform: uppercase;
@@ -55,13 +55,17 @@ header {
 }
 
 
-#btn-submit, #btn-op-submit, #btn-connexion, #btn-pwd_admin, #btn-adr_dest, #btn-mdp_adr_exp, #btn-name {
+#btn-submit, #btn-op-submit, #btn-connexion, #btn-pwd_admin, #btn-adr_dest, #btn-connecter, #btn-mdp_adr_exp, #btn-name {
     text-transform: capitalize !important;
     width: auto !important;
 }
 
-#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover, #btn-op-submit:hover, #btn-connexion:hover, #btn-logOut :hover, #btn-name :hover {
+#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover, #btn-op-submit:hover, #btn-connecter :hover, #btn-connexion:hover, #btn-logOut :hover, #btn-name :hover {
     background-color: #577B94 !important;
+}
+
+#btn-flash {
+    display: none;
 }
 
 /*-- Champs import de fichier --*/
