@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 from threading import Thread
+
 import pandas as pd
 import sqlalchemy as sqla
 from flask import Flask, render_template, request, send_file, redirect, url_for, session
@@ -36,8 +37,8 @@ class User:
 user = [User(password=Config.ADMIN_PASSWORD)]
 
 
-# @Routes
-# INDEX DU SITE WEB
+# ----- Routes ----- #
+
 @app.route('/')
 def index():
     return render_template('index.html', title='Outil Agate')
@@ -213,10 +214,6 @@ def admin_menu():
 
     return redirect(url_for('tableauAddresses'))
 
-# Menu déroulant pour les addresses destinataires + les champs COM
-def convert(string):
-    li = list(string.split(","))
-    return li
 
 # Menu déroulant pour les addresses destinataires + les champs COM
 @app.route('/tableauAddresses')
@@ -752,6 +749,14 @@ def get_name_mail(name):
             if name[ind_l] == '/':
                 return name[ind_l + 1:len(name)]
     return res
+
+
+## Admin
+
+# Menu déroulant pour les addresses destinataires + les champs COM
+def convert(string):
+    li = list(string.split(","))
+    return li
 
 
 ## Fichier temporaires
