@@ -11,7 +11,6 @@ from threading import Thread
 from config import Config
 from unidecode import unidecode
 import hashlib
-from tabulate import tabulate
 
 
 
