@@ -74,7 +74,7 @@ def admin_menu():
             if mdp_admin == mdp_admin2 and mdp_admin != "":
 
                 fo = open('config.py', 'r')
-                #ligne = linecache.getline("config.py", 35)
+                # ligne = linecache.getline("config.py", 35)
 
                 lines = fo.readlines()
                 for line in lines:
@@ -444,9 +444,7 @@ def mise_en_base(table_name, dataframe):
     try:
         dataframe.to_sql(table_name, conn, if_exists='fail', index=False, dtype=dataframe_types)
     except ValueError:
-        # print("nom en double")
-        print("Deja en base") # <--- C'est ici que ça retourne si c pas en base
-        return 1
+        return "err_name"
     except Exception as ex:
         print(ex)  # TODO : à remplacer par un feedback au front
     else:
@@ -454,6 +452,7 @@ def mise_en_base(table_name, dataframe):
     finally:
         conn.close()
     return 0
+
 
 # TODO : df_to_sql amélioration
 # Fonction qui retourne le tableau de types postgres associé au tableau de type dataframe entré
@@ -466,8 +465,10 @@ def df_to_sql(dfparam):
             res.update({i: sqla.types.INT()})
     return res
 
+
 def get_com(liste):
     return liste[0]
+
 
 # Permet de créer une chaine pour requête sql à partir d'une liste
 def list_to_str(liste):
@@ -479,6 +480,7 @@ def list_to_str(liste):
             str = str + liste[i] + ', '
     return str
 
+
 # Permet de créer une chaine pour requête sql a partir d'une liste de données relative aux années
 def list_with_year_to_str(liste, year):
     string = ""
@@ -488,6 +490,7 @@ def list_with_year_to_str(liste, year):
         else:
             string = string + liste[i] + str(year) + ', '
     return string
+
 
 # Permet de créer une liste de données relative à l'année 'year'
 def list_with_year_to_list_with_choosen_year(liste, year):
@@ -517,7 +520,10 @@ def download_file():
     except IndexError:
         df_export = pd.DataFrame.from_records(content)
 
-    mise_en_base(db_name, df_export)
+    result = mise_en_base(db_name, df_export)
+
+    if result == "err_name":
+        return result
 
     # Vide le dossier local de fichiers
     cleanTempDirectory()
@@ -528,7 +534,7 @@ def download_file():
     path = os.path.join(os.getcwd(), "temp")
     file_name_path = os.path.join(path, file_name)
     df_export.to_csv(file_name_path, sep=";", index=False)
-    send_email(file_name_path)
+    # send_email(file_name_path)
 
     return send_file(file_name_path,
                      mimetype='text/csv',
@@ -564,15 +570,18 @@ def send_email(file_name):
     thr.start()
     return render_template('index.html')
 
+
 def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
+
 
 # Recupere le d'un fichier à partir de son chemin
 def get_name(name):
     for ind_l in reversed(range(len(name) - 1)):
         if name[ind_l] == '\\':
             return name[ind_l + 1:len(name)]
+
 
 def get_name_mail(name):
     res = None

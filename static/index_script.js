@@ -41,27 +41,18 @@ function clearFields() {
 function gestionErreurs(info, progress) {
     let msg = "";
 
-    if (info === "err_ext" || info === "err_empty" || info === "err_com") {
-        let filepath = document.getElementById("inputImportFile").value;
-        let fileName = filepath.replace(/^.*?([^\\\/]*)$/, '$1');
+    if (info === "err_ext" || info === "err_empty" || info === "err_jointure" || info === "err_com" || info === "err_join_OP") {
         if (info === "err_ext") {
-            msg = "L'extension du fichier \"" + fileName + "\" n'est pas supportée.";
+            msg = "L'extension du fichier sélectionné n'est pas supportée.";
         } else if (info === "err_empty") {
-            msg = "Le fichier \"" + fileName + "\" est vide.";
-        } else if (info === "err_jointure") {
-            msg = "Erreur lors de la jointure du referentiel : Attention à bien ignorer tous les champs qui ne sont pas des données";
+            msg = "Le fichier sélectionné est vide.";
+        } else if (info === "err_jointure" || info === "err_join_OP") {
+            msg = "Erreur lors de la jointure du referentiel : attention à bien ignorer toutes les colonnes ne contenant pas de nombre.";
         } else {
-            msg = "Colonne avec les codes INSEE introuvable.\nAjoutez une colonne \"com\" avec les codes ou renommez la colonne correspondante.";
+            msg = "Colonne avec les codes INSEE introuvable.\nAjoutez une colonne avec des codes INSEE à votre fichier si celle-ci est manquante\npuis sélectionnez-la dans le formulaire de sélection.";
         }
         window.alert(msg);
         document.getElementById("inputImportFile").value = "";
-        progress.css("visibility", "hidden");
-        return -1;
-    } else if (info === "err_name") {
-        let tableName = document.getElementById("table-name").value;
-        msg = "Le nom \"" + tableName + "\" est déjà utilisé."
-        window.alert(msg);
-        document.getElementById("table-name").value = "";
         progress.css("visibility", "hidden");
         return -1;
     } else if (info === "err_yearref") {
@@ -325,6 +316,13 @@ function downloadFile(fileName, csv) {
     link.click(); // Clic sur le lien, déclenche le téléchargement
 }
 
+function changeName() {
+    hot.updateSettings({
+        title: document.getElementById("new-table-name").value,
+    });
+    $("#name-modal").modal('hide');
+}
+
 // Fonction appelée suite au clic sur le bouton "Export"
 async function exportToCSV(event) {
     event.preventDefault(); // Empêche le navigateur de recharger la page
@@ -360,8 +358,17 @@ async function exportToCSV(event) {
     });
     progress.width("75%");
 
-    // Récupération du CSV sous format texte
     const csv = await response.text();
+
+    if (csv === "err_name") {
+        let msg = "Le nom \"" + title + "\" est déjà utilisé."
+        window.alert(msg);
+        progress.css("visibility", "hidden");
+        $("#name-modal").modal('show');
+        return;
+    }
+
+    // Récupération du CSV sous format texte
     progress.width("100%");
 
     // Téléchargement du fichier
@@ -379,5 +386,7 @@ async function exportToCSV(event) {
 const exportBtn = document.getElementById("btn-export");
 exportBtn.addEventListener("click", exportToCSV);
 
+const changeNameModal = document.getElementById("btn-name");
+changeNameModal.addEventListener("click", changeName);
 
 /** OPERATIONS */
