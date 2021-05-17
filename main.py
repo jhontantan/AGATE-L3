@@ -158,19 +158,26 @@ def admin_menu():
         if request.form.get("tableauAddresses"):
             return redirect(url_for('tableauAddresses'))
 
+        if request.form.get("del_mail"):
+            mdp_adr_exp = request.form.get('mdp_adr_exp')
+
+            return redirect(url_for('tableauAddresses'))
+
         if request.form.get("logout"):
             session.pop('username', None)
             return redirect(url_for('index'))
 
     return redirect(url_for('index'))
 
+
+    # Menu déroulant avec les addresses destinataires
 @app.route('/tableauAddresses')
 def tableauAddresses():
     html_output = ''
     list_add_dest = Config.MAIL_ADRESSES_DEST
 
-    html_output += f"<label for='drp_dwn_op'>Adresses destinataires :</label>"
-    html_output += f"<select name='operation' id='drp_dwn_op'>"
+    html_output += f"<label for='drp_dwn_mail'>Adresses destinataires :</label>"
+    html_output += f"<select name='operation' id='drp_dwn_mail'>"
 
     for char in range(len(list_add_dest)):
         html_output += f"<option value='{char}'> {list_add_dest[char]} </option>"
@@ -181,7 +188,6 @@ def tableauAddresses():
 
 
     fo = open('templates/admin.html', 'r')
-    # ligne2 = linecache.getline("config.py", 25)
     lignes = fo.readlines()
     count = 0
 
@@ -192,11 +198,7 @@ def tableauAddresses():
             ligne
             break
 
-    # count +=1
-    # lignes[count]='test\n'
     lignes[count]=html_output
-
-    #modif = open('templates/admin.html', 'r+').replace(ligne[count], 'test')
 
     f1 = open('templates/admin.html', 'w')
     f1.writelines(lignes)
