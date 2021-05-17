@@ -70,7 +70,6 @@ def page_not_found():
 def admin_menu():
     global liste_mots
     if 'username' in session:
-
         # PARTIE nouveau mot de passe admin #
         if request.form.get("mdp_admin"):
             mdp_admin = request.form.get('mdp_admin')
@@ -153,13 +152,37 @@ def admin_menu():
             f1.close()
             flash('Le mail à été ajouté avec succès', 'success')
 
-            return render_template('admin.html')
+            return redirect(url_for('tableauAddresses'))
 
         if request.form.get("tableauAddresses"):
             return redirect(url_for('tableauAddresses'))
 
         if request.form.get("del_mail"):
-            mdp_adr_exp = request.form.get('mdp_adr_exp')
+            mail_a_effacer =request.form.get('operation')
+            # print(mail_a_effacer)
+            # print(Config.MAIL_ADRESSES_DEST)
+            Config.MAIL_ADRESSES_DEST.remove(mail_a_effacer)
+
+            fo = open('config.py', 'r')
+
+            lines = fo.readlines()
+            for line in lines:
+                if "MAIL_ADRESSES_DEST" in line:
+                         liste_mots = line.split()
+
+            mot2 = liste_mots[2]
+            print(mot2)
+            list_temp_mail = "', '".join(str(x) for x in Config.MAIL_ADRESSES_DEST)
+            print(list_temp_mail)
+            list_temp_mail = str("['") + list_temp_mail + str("']")
+            # add_dest = str("[") + add_dest + str("]")
+            fo.close()
+
+            # modif = open('config.py', 'r+').read().replace(mot2, '')
+            # f1 = open('config.py', 'w')
+            # f1.write(modif)
+            # f1.close()
+            # flash('Le mail à été ajouté avec succès', 'success')
 
             return redirect(url_for('tableauAddresses'))
 
@@ -180,7 +203,7 @@ def tableauAddresses():
     html_output += f"<select name='operation' id='drp_dwn_mail'>"
 
     for char in range(len(list_add_dest)):
-        html_output += f"<option value='{char}'> {list_add_dest[char]} </option>"
+        html_output += f"<option value='{list_add_dest[char]}'> {list_add_dest[char]} </option>"
 
     html_output += f"</select>"
     html_output += f"<button type='submit' id='btn-adr_dest' class='btn btn-primary' name='del_mail' value='del_mail'>Effacer Mail</button>"
@@ -194,7 +217,6 @@ def tableauAddresses():
     for ligne in lignes:
         count +=1
         if "tableauModifAddresse" in ligne:
-            print(count)
             ligne
             break
 
@@ -203,7 +225,6 @@ def tableauAddresses():
     f1 = open('templates/admin.html', 'w')
     f1.writelines(lignes)
     f1.close()
-    flash('Le mail à été ajouté avec succès', 'success')
 
     return render_template('admin.html')
 
