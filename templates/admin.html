@@ -6,7 +6,7 @@
             {% if messages %}
                 <ul class=flashes>
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert" onmouseleave=delete_flash(this)>
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert" onmouseleave=delete_flash(this) onload="reload()">
                             {{ message }}
                         </div>
                     {% endfor %}
@@ -32,13 +32,13 @@
                                     <button type="submit" id="btn-jointure_com" class="btn btn-primary" name="jointure_com" value="jointure_com">Modifier COM</button>
                                 </div>
                         </div>
-                        <div class="modal-body">
-                                <div class="form-group mb-2">
-                                    <label>Changement autres champs : </label>
-<input type='text' id='lib_com' name='lib_com' size='37' value='libcom,cco,libcco,com1,com10,com5'>
-                                    <button type="submit" id="btn-jointure_champs" class="btn btn-primary" name="jointure" value="jointure">Modifier champs Jointure</button>
-                                </div>
-                        </div>
+                            <div class="modal-body">
+                                    <div class="form-group mb-2">
+                                        <label>Changement autres champs : </label>
+<input type="text" id="lib_com" name="lib_com" size="37" value="libcom">
+                                        <button type="submit" id="btn-jointure_champs" class="btn btn-primary" name="jointure" value="jointure" >Modifier champs Jointure</button>
+                                    </div>
+                            </div>
                         <hr>
                         <div class="modal-body">
                             <h5 class="modal-title" id="exampleModalLabel">Admin</h5>
@@ -57,7 +57,7 @@
                             <p></p>
                             <div class="form-group mb-2">
                                 <div id="tableauModifAddresse">
-<label for='drp_dwn_mail'>Adresses destinataires :</label><select name='operation' id='drp_dwn_mail'><option value='adressedetest73@outlook.fr'> adressedetest73@outlook.fr </option></select><button type='submit' id='btn-adr_dest' class='btn btn-primary' name='del_mail' value='del_mail'>Effacer Mail</button>
+<label for='drp_dwn_mail'>Adresses destinataires :</label><select name='operation' id='drp_dwn_mail'><option value='adressedetest73@outlook.fr'> adressedetest73@outlook.fr </option><option value='jomar404@gmail.com'> jomar404@gmail.com </option></select><button type="submit" id="btn-adr_dest" class="btn btn-primary" name="del_mail" value="del_mail">Effacer Mail</button>
                                 </div>
                             </div>
                         </div>
@@ -90,6 +90,10 @@
     <script>
             function delete_flash(flash) {
                 $(flash).parent().remove()
+                location.reload();
+            }
+            function reload(){
+                location.reload();
             }
     </script>
 

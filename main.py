@@ -2,7 +2,6 @@ import hashlib
 import json
 import os
 from threading import Thread
-
 import pandas as pd
 import sqlalchemy as sqla
 from flask import Flask, render_template, request, send_file, redirect, url_for, session
@@ -122,7 +121,6 @@ def admin_menu():
                     liste_mots = line.split()
 
             mot2 = liste_mots[2]
-            print(mot2)
             add_dest = str("[") + add_dest + str("]")
             fo.close()
 
@@ -172,7 +170,6 @@ def admin_menu():
                     ligne
                     break
                 count += 1
-            print(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE)
             line_temp = f"    CHAMPS_JOINTURE_DEPENDANT_ANNEE = {Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE} \n"
             lines[count] = line_temp
 
@@ -214,9 +211,7 @@ def admin_menu():
             session.pop('username', None)
             return redirect(url_for('index'))
 
-    return redirect(url_for('index'))
-
-
+    return redirect(url_for('tableauAddresses'))
 
 # Menu déroulant pour les addresses destinataires + les champs COM
 def convert(string):
@@ -237,20 +232,18 @@ def tableauAddresses():
         html_output += f"<option value='{list_add_dest[char]}'> {list_add_dest[char]} </option>"
 
     html_output += f"</select>"
-    html_output += f"<button type='submit' id='btn-adr_dest' class='btn btn-primary' name='del_mail' value='del_mail'>Effacer Mail</button>"
+    html_output += f'<button type="submit" id="btn-adr_dest" class="btn btn-primary" name="del_mail" value="del_mail">Effacer Mail</button>'
     html_output += f"\n"
 
     list_temp = []
     i = 0
 
-    print(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE)
     for i in range(len(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE)):
         if i > 0:
             list_temp.append(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[i])
 
-    print(list_temp)
     temp_list_com = ','.join(f'{w}' for w in list_temp)
-    html_output1 = f"<input type='text' id='lib_com' name='lib_com' size='37' value='{temp_list_com}'>"
+    html_output1 = f'<input type="text" id="lib_com" name="lib_com" size="37" value="{temp_list_com}">'
     html_output1 += f"\n"
 
     fo = open('templates/admin.html', 'r')
