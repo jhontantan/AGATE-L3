@@ -1,7 +1,7 @@
 /*-------- GENERAL --------*/
 body {
     font-family: Helvetica, Arial, sans-serif !important;
-    color : #212529;
+    color: #212529;
 }
 
 /*-------- HEADER --------*/
@@ -26,28 +26,15 @@ header {
 
 /*-------- MAIN CONTENT --------*/
 #main-bloc {
-    padding-top : 1.5%;
-    padding-bottom : 4%;
+    padding-top: 1.5%;
+    padding-bottom: 0%;
 }
 
-.col-space {
-    padding-right: 1.5%;
-}
-
-#sheet-area {
-    padding: 0.2% 7%;
-    background-color: #313E47;
-}
-
-#sheet-area img {
-    width: 100%;
-}
-
-/*-------- BUTTONS --------*/
+/*-- Boutons --*/
 .btn-toolbar {
     padding-left: 7%;
     padding-right: 7%;
-    padding-bottom : 1.5%;
+    padding-bottom: 0.5%;
 }
 
 .btn-toolbar .col-1 {
@@ -55,7 +42,7 @@ header {
     padding-left: 0 !important;
 }
 
-#btn-export, #btn-import, #btn-update, #btn-submit {
+#btn-export, #btn-import, #btn-update, #btn-submit, #btn-op-submit, #btn-logOut, #btn-connexion, #btn-connecter, #btn-pwd_admin, #btn-adr_dest, #btn-mdp_adr_exp, #btn-name, #btn-jointure_com, #btn-jointure_champs {
     background-color: #313E47 !important;
     margin: 0 !important;
     text-transform: uppercase;
@@ -67,58 +54,90 @@ header {
     vertical-align: top;
 }
 
-#btn-submit {
+
+#btn-submit, #btn-op-submit, #btn-connexion, #btn-pwd_admin, #btn-adr_dest, #btn-connecter, #btn-mdp_adr_exp, #btn-name, #btn-jointure_com, #btn-jointure_champs {
     text-transform: capitalize !important;
     width: auto !important;
 }
 
-#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover {
+#btn-export:hover, #btn-import:hover, #btn-update:hover, #btn-submit:hover, #btn-op-submit:hover, #btn-connecter :hover, #btn-connexion:hover, #btn-logOut :hover, #btn-name :hover, #btn-jointure_com:hover, #btn-jointure_champs:hover {
     background-color: #577B94 !important;
 }
 
-/*-------- IMPORT --------*/
+#btn-flash {
+    display: none;
+}
+
+/*-- Champs import de fichier --*/
+#operation-content {
+    /*width: 600px;*/
+}
+.modal-body {
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}
 
 #inputImportFile {
     font-size: 0.9vw !important;
 }
 
-/*-------- ALERTS --------*/
-
-.alert.alert-success.alert-dismissible.fade.show {
-    margin-left: 5.4%;
-    margin-right: 7%;
-    margin-bottom: 0%;
-    font-size: 0.9vw !important;
-    padding: 1%;
+#list-op {
+    list-style-type: circle;
+    padding-right: 20%;
+    /*display: table !important;*/
 }
 
-.btn-close {
+#list-op li select {
+    float: right;
+}
+
+/*-- Barre de chargement --*/
+.progress {
+    padding-left: 7%;
+    padding-right: 7%;
+    padding-bottom: 0.5%;
     background-color: #FFFFFF;
-    color: #313E47;
-    padding: 1.4% !important;
 }
 
+#import-progress {
+    visibility: hidden;
+    -webkit-transition: none !important;
+    transition: none !important;
+}
+
+/*-- Tableau --*/
+.col-space {
+    padding-right: 1.5%;
+}
+
+#space-connexion {
+    padding-right: 71.5%;
+}
+
+#sheet-area {
+    padding: 0.2% 7%;
+    background-color: #313E47;
+}
 
 /*-------- FOOTER --------*/
 footer {
     padding-left: 7%;
     padding-right: 7%;
-    padding-bottom : 2%;
+    padding-bottom: 2%;
     border-top: 2px solid #313E4735;
 }
 
 footer div {
-    padding-top : 1%;
+    padding-top: 1%;
     font-size: 0.6vw !important;
 }
 
 footer div a {
-    color : #212529;
-    text-decoration : none;
+    color: #212529;
+    text-decoration: none;
 }
 
 footer div a:hover {
-    color : #577B94;
+    color: #577B94;
 }
-
 

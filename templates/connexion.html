@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+    <div id="sheet-area">
+    <div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class=flashes>
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert" onmouseleave=delete_flash(this)>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    </div>
+        <div id="operation-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content" id="operation-content">
+                    <form method="POST" action="connexion" id="operation-form" name="operation-form" enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <!-- Titre de la pop up -->
+                            <h4 class="modal-title" id="title_operation_modal_id">Connexion Admin</h4>
+                        </div>
+                        <div class="modal-body">
+                            <!-- TODO : Com à choisir -->
+                            <p>Mot de passe </p>
+                            <p> <input type="password" class="form-control" id="password" name="password" placeholder="Password"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <div><button type="submit" id="btn-retour" class="btn btn-secondary" name="retour" value="retour">Retour</button></div>
+                            <!-- Bouton pour soumettre le formulaire -->
+                            <div>  <button type="submit" id="btn-connecter" class="btn btn-primary" name="password" value="password" >Se connecter</button> </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+            function delete_flash(flash) {
+                $(flash).parent().remove()
+            }
+    </script>
+{% endblock %}
+

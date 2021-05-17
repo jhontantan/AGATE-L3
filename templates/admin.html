@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div id="sheet-area">
+        <div>{% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class=flashes>
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert" onmouseleave=delete_flash(this) onload="reload()">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        </div>
+        <div class="form-group"  tabindex="-1"  aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form method="POST" action="admin" id="admin-form" name="form" enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <!-- Titre de la pop up -->
+                            <h3 class="modal-title" id="exampleModalLabel">Administration</h3>
+                        </div>
+                        <div class="modal-body">
+                            <h5 class="modal-title" id="exampleModalLabel">Jointure</h5>
+                            <p></p>
+                                <div class="form-group mb-2">
+                                    <label>Changement code INSEE : </label>
+                                    <input type="text" id="com" name="com" size="20">
+                                    <button type="submit" id="btn-jointure_com" class="btn btn-primary" name="jointure_com" value="jointure_com">Modifier COM</button>
+                                </div>
+                        </div>
+                            <div class="modal-body">
+                                    <div class="form-group mb-2">
+                                        <label>Changement autres champs : </label>
+<input type="text" id="lib_com" name="lib_com" size="37" value="libcom">
+                                        <button type="submit" id="btn-jointure_champs" class="btn btn-primary" name="jointure" value="jointure" >Modifier champs Jointure</button>
+                                    </div>
+                            </div>
+                        <hr>
+                        <div class="modal-body">
+                            <h5 class="modal-title" id="exampleModalLabel">Admin</h5>
+                            <p></p>
+                            <div class="form-group mb-2">
+                                <label>Nouveau mot de passe Admin : </label>
+                                <input type="password" id="mdp_admin" name="mdp_admin" minlength="6" size="37">
+                                <label>Confirmation du nouveau mot de passe Admin : </label>
+                                <input type="password" id="mdp_admin2" name="mdp_admin2" minlength="6" size="37">
+                                <button type="submit" id="btn-pwd_admin" class="btn btn-primary" name="mdp_admin" value="mdp_admin">Valider </button>
+                            </div>
+                        </div>
+                        <hr/>
+                        <div class="modal-body">
+                            <h5 class="modal-title" id="exampleModalLabel">Mail</h5>
+                            <p></p>
+                            <div class="form-group mb-2">
+                                <div id="tableauModifAddresse">
+<label for='drp_dwn_mail'>Adresses destinataires :</label><select name='operation' id='drp_dwn_mail'><option value='adressedetest73@outlook.fr'> adressedetest73@outlook.fr </option><option value='jomar404@gmail.com'> jomar404@gmail.com </option></select><button type="submit" id="btn-adr_dest" class="btn btn-primary" name="del_mail" value="del_mail">Effacer Mail</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-body">
+                                <label>Ajouter une adresse destinataire : </label>
+                                <input type="email" id="add_dest" name="add_dest" minlength="3" size="37">
+                                <button type="submit" id="btn-adr_dest" class="btn btn-primary" name="add_dest" value="add_dest">Valider</button>
+                        </div>
+                        <hr/>
+                        <div class="modal-body">
+                                <div class="form-group mb-2">
+                                    <label>Nouveau mot de passe de l'adresse expéditrice : </label>
+                                    <input type="password" id="mdp_adr_exp" name="mdp_adr_exp" minlength="6" size="37">
+                                    <label>Confirmation du mot de passe : </label>
+                                    <input type="password" id="mdp_adr_exp2" name="mdp_adr_exp2" minlength="6" size="37">
+                                    <button type="submit" id="btn-mdp_adr_exp" class="btn btn-primary" name="mdp_adr_exp" value="mdp_adr_exp">Valider</button>
+                                </div>
+                        </div>
+
+
+                        <div class="modal-footer">
+                            <!-- Bouton déconnexion -->
+                            <button type="submit" id="btn-submit" class="btn btn-primary" value="logout" name="logout">Déconnexion</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+            function delete_flash(flash) {
+                $(flash).parent().remove()
+                location.reload();
+            }
+            function reload(){
+                location.reload();
+            }
+    </script>
+
+{% endblock %}
