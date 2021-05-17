@@ -161,7 +161,20 @@ def admin_menu():
             f1.close()
             return redirect(url_for('tableauAddresses'))
 
+        if request.form.get("jointure"):
+            com = request.form.get('com')
+            libcom = request.form.get('libcom')
+            cco = request.form.get('cco')
+            libcco = request.form.get('libcco')
 
+            Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[0] = com
+            Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[1] = libcom
+            Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[2] = cco
+            Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[3] = libcco
+
+           # fichier = open('config.py', 'r')
+
+            return redirect(url_for('tableauAddresses'))
 
         if request.form.get("logout"):
             session.pop('username', None)
