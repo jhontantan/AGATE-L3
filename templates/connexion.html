@@ -10,10 +10,8 @@
             {% if messages %}
                 <ul class=flashes>
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert">
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert" onmouseleave=delete_flash(this)>
                             {{ message }}
-                            <button type="button" onclick=delete_flash(this) class="btn-close" id="btn-flash" data-bs-dismiss="alert"
-                                    aria-label="Close3"></button>
                         </div>
                     {% endfor %}
                 </ul>

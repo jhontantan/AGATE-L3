@@ -62,7 +62,6 @@ def admin_menu():
                 h_mdp_admin = hashlib.md5(mdp_admin.encode('utf8'))
                 mdp_admin = h_mdp_admin.hexdigest()
                 fo = open('config.py', 'r')
-                # ligne = linecache.getline("config.py", 35)
 
                 lines = fo.readlines()
                 for line in lines:
@@ -90,7 +89,6 @@ def admin_menu():
             if mdp_adr_exp == mdp_adr_exp2 and mdp_adr_exp != "":
                 Config.MAIL_PASSWORD = mdp_adr_exp
                 fo = open('config.py', 'r')
-                # ligne2 = linecache.getline("config.py", 25)
                 lignes = fo.readlines()
                 for ligne in lignes:
                     if "MAIL_PASSWORD" in ligne:
@@ -110,6 +108,7 @@ def admin_menu():
 
             return redirect(url_for('tableauAddresses'))
 
+        # PARTIE ajouter adresse expeditrice #
         if request.form.get("add_dest"):
             add_dest = request.form.get('add_dest')
             Config.MAIL_ADRESSES_DEST.append(add_dest)
@@ -131,13 +130,11 @@ def admin_menu():
             f1 = open('config.py', 'w')
             f1.write(modif)
             f1.close()
-            flash('Le mail à été ajouté avec succès', 'success')
+            flash('Le mail a été ajouté avec succès', 'success')
 
             return redirect(url_for('tableauAddresses'))
 
-        if request.form.get("tableauAddresses"):
-            return redirect(url_for('tableauAddresses'))
-
+        # PARTIE effacer adresse expeditrice #
         if request.form.get("del_mail"):
             mail_a_effacer = request.form.get('operation')
             Config.MAIL_ADRESSES_DEST.remove(mail_a_effacer)
@@ -157,31 +154,11 @@ def admin_menu():
             f1 = open('config.py', 'w')
             f1.writelines(lignes)
             f1.close()
+
+            flash("Le mail a été effacé avec succès", 'success')
             return redirect(url_for('tableauAddresses'))
 
-        if request.form.get("jointure"):
-            libcom = request.form.get('lib_com')
-            list_temp = []
-            list_temp.append(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[0])
-            list_temp.extend(convert(libcom))
-            fichier = open('config.py', 'r')
-            lines = fichier.readlines()
-            count = 0
-            for ligne in lines:
-                if "CHAMPS_JOINTURE_DEPENDANT_ANNEE" in ligne:
-                    ligne
-                    break
-                count += 1
-            line_temp = f"    CHAMPS_JOINTURE_DEPENDANT_ANNEE = {list_temp} \n"
-            lines[count] = line_temp
-
-            fichier.close()
-
-            f1 = open('config.py', 'w')
-            f1.writelines(lines)
-            f1.close()
-            return redirect(url_for('tableauAddresses'))
-
+        # PARTIE modifier champ COM  #
         if request.form.get("jointure_com"):
 
             com = request.form.get('com')
@@ -204,6 +181,33 @@ def admin_menu():
             f1 = open('config.py', 'w')
             f1.writelines(lines)
             f1.close()
+            flash("Le champ du code INSEE a été modifié avec succès", 'success')
+            return redirect(url_for('tableauAddresses'))
+
+        # PARTIE modifier champ Autres COM  #
+        if request.form.get("jointure"):
+            libcom = request.form.get('lib_com')
+            list_temp = []
+            list_temp.append(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[0])
+            list_temp.extend(convert(libcom))
+            fichier = open('config.py', 'r')
+            lines = fichier.readlines()
+            count = 0
+            for ligne in lines:
+                if "CHAMPS_JOINTURE_DEPENDANT_ANNEE" in ligne:
+                    ligne
+                    break
+                count += 1
+            line_temp = f"    CHAMPS_JOINTURE_DEPENDANT_ANNEE = {list_temp} \n"
+            lines[count] = line_temp
+
+            fichier.close()
+
+            f1 = open('config.py', 'w')
+            f1.writelines(lines)
+            f1.close()
+
+            flash("La modification des champs dependant année a été réalisée avec succès", 'success')
             return redirect(url_for('tableauAddresses'))
 
         if request.form.get("logout"):
@@ -212,14 +216,14 @@ def admin_menu():
 
     return redirect(url_for('index'))
 
-    # Menu déroulant avec les addresses destinataires
 
 
+# Menu déroulant pour les addresses destinataires + les champs COM
 def convert(string):
     li = list(string.split(","))
     return li
 
-
+# Menu déroulant pour les addresses destinataires + les champs COM
 @app.route('/tableauAddresses')
 def tableauAddresses():
     html_output = ''

@@ -6,10 +6,8 @@
             {% if messages %}
                 <ul class=flashes>
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert">
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" id="alert-ok" role="alert" onmouseleave=delete_flash(this)>
                             {{ message }}
-                            <button type="button" onclick=delete_flash(this) class="btn-close" data-bs-dismiss="alert"
-                                    aria-label="Close3"></button>
                         </div>
                     {% endfor %}
                 </ul>
@@ -29,7 +27,7 @@
                             <h5 class="modal-title" id="exampleModalLabel">Jointure</h5>
                             <p></p>
                                 <div class="form-group mb-2">
-                                    <label>Changement variable com : </label>
+                                    <label>Changement code INSEE : </label>
                                     <input type="text" id="com" name="com" size="20">
                                     <button type="submit" id="btn-jointure_com" class="btn btn-primary" name="jointure_com" value="jointure_com">Modifier COM</button>
                                 </div>
@@ -37,7 +35,7 @@
                         <div class="modal-body">
                                 <div class="form-group mb-2">
                                     <label>Changement autres champs : </label>
-<input type='text' id='lib_com' name='lib_com' size='37' value='libcom,cco,libcco'>
+<input type='text' id='lib_com' name='lib_com' size='37' value='libcom,cco,libcco,com1,com10,com5'>
                                     <button type="submit" id="btn-jointure_champs" class="btn btn-primary" name="jointure" value="jointure">Modifier champs Jointure</button>
                                 </div>
                         </div>
@@ -90,7 +88,6 @@
         </div>
     </div>
     <script>
-
             function delete_flash(flash) {
                 $(flash).parent().remove()
             }
