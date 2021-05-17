@@ -32,25 +32,21 @@ class Config:
     MAIL_USE_SSL = False
 
     # Adresse utilisée par l'application lors de l'envoie de mail
-    MAIL_USERNAME = 'adressedetest73@outlook.fr'  # 'traitement-geomatique@agate-territoires.fr'
+    MAIL_USERNAME = 'traitement-geomatique@agate-territoires.fr'
 
     # Mot de passe de l'adresse mail
-    MAIL_PASSWORD = 'motdepasse73'  # 'Won06597'
+    MAIL_PASSWORD = 'Won06597'
 
     # Remplir avec ('Pseudonyme application', 'MAIL_USERNAME')
     MAIL_DEFAULT_SENDER = (
-        'Outil Agate', 'adressedetest73@outlook.fr')  # ('Outil Agate', 'traitement-geomatique@agate-territoires.fr')
+        'Outil Agate', 'traitement-geomatique@agate-territoires.fr')
 
     # Adresses
-    MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr']  # geomatique@agate-territoires.fr
-
+    MAIL_ADRESSES_DEST = ['geomatique@agate-territoires.fr']
 
     # Ne pas modifier
     MAIL_MAX_EMAILS = None
     MAIL_ASCII_ATTACHMENTS = True
 
-    # Options pour le debug
-    MAIL_DEBUG = True
-
     # Mot de passe administrateur
-    ADMIN_PASSWORD = 'e10adc3949ba59abbe56e057f20f883e'  # 123456
+    ADMIN_PASSWORD = 'e10adc3949ba59abbe56e057f20f883e'  # Actuellement : 123456
