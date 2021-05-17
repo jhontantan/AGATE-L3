@@ -80,7 +80,7 @@ def admin_menu():
                 flash('Le mot de passe à été changé avec succès', 'success')
                 return render_template('admin.html')
             flash('Les mots de passe saisis ne sont pas identiques  ', 'danger')
-            return render_template('admin.html')
+            return redirect(url_for('tableauAddresses'))
 
         # PARTIE nouveau mot de passe adresse expeditrice #
         if request.form.get("mdp_adr_exp"):
@@ -108,16 +108,14 @@ def admin_menu():
                 return render_template('admin.html')
             flash('Les mots de passe saisis ne sont pas identiques  ', 'danger')
 
-            return render_template('admin.html')
+            return redirect(url_for('tableauAddresses'))
 
         if request.form.get("add_dest"):
             add_dest = request.form.get('add_dest')
             Config.MAIL_ADRESSES_DEST.append(add_dest)
 
             add_dest = ','.join(f"'{w}'" for w in Config.MAIL_ADRESSES_DEST)
-            # add_dest = ', '.join(Config.MAIL_ADRESSES_DEST)
             fo = open('config.py', 'r')
-            # ligne = linecache.getline("config.py", 35)
 
             lines = fo.readlines()
             for line in lines:
@@ -216,13 +214,16 @@ def admin_menu():
 
     # Menu déroulant avec les addresses destinataires
 
+
 def convert(string):
     li = list(string.split(","))
     return li
 
+
 @app.route('/tableauAddresses')
 def tableauAddresses():
     html_output = ''
+    html_output1 = ''
     list_add_dest = Config.MAIL_ADRESSES_DEST
 
     html_output += f"<label for='drp_dwn_mail'>Adresses destinataires :</label>"
@@ -235,9 +236,29 @@ def tableauAddresses():
     html_output += f"<button type='submit' id='btn-adr_dest' class='btn btn-primary' name='del_mail' value='del_mail'>Effacer Mail</button>"
     html_output += f"\n"
 
+    list_temp = []
+    i = 0
+
+    print(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE)
+    for i in range(len(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE)):
+        if i > 0:
+            list_temp.append(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE[i])
+
+    print(list_temp)
+    temp_list_com = ','.join(f'{w}' for w in list_temp)
+    html_output1 = f"<input type='text' id='lib_com' name='lib_com' size='37' value='{temp_list_com}'>"
+    html_output1 += f"\n"
+
     fo = open('templates/admin.html', 'r')
     lignes = fo.readlines()
     count = 0
+    count2 = 0
+
+    for ligne in lignes:
+        count2 += 1
+        if "Changement autres champs" in ligne:
+            ligne
+            break
 
     for ligne in lignes:
         count += 1
@@ -245,6 +266,7 @@ def tableauAddresses():
             ligne
             break
 
+    lignes[count2] = html_output1
     lignes[count] = html_output
 
     f1 = open('templates/admin.html', 'w')
@@ -257,7 +279,7 @@ def tableauAddresses():
 @app.route('/connexion', methods=['GET', 'POST'])
 def connexion():
     if 'username' in session:
-        return render_template('admin.html')
+        return redirect(url_for('tableauAddresses'))
     if request.method == 'POST':
         if request.form.get("password"):
             password = request.form.get('password')
@@ -265,7 +287,7 @@ def connexion():
             password = h_mdp_admin.hexdigest()
             if user[0].password == password:
                 session['username'] = user[0].username
-                return render_template('admin.html')
+                return redirect(url_for('tableauAddresses'))
             else:
                 flash('Mot de passe incorrect', 'danger')
         if request.form.get("retour"):
