@@ -1,32 +1,17 @@
-import linecache
+import hashlib
+import json
 import os
+from threading import Thread
+
 import pandas as pd
 import sqlalchemy as sqla
 from flask import Flask, render_template, request, send_file, redirect, url_for, session
 from flask import flash
-import json
 from flask_mail import Mail, Message
 from sqlalchemy import create_engine, exc
-from threading import Thread
-from config import Config
 from unidecode import unidecode
-import hashlib
 
-
-
-# ---------- Informations ---------- #
-# Prérequis
-# pip freeze > requirements.txt
-# pip install -r requirements.txt
-
-
-# JOINTURE
-COM_JOINTURE = 'com14'
-CHAMPS_JOINTURE_DEPENDANT_ANNEE = ['com', 'libcom', 'cco', 'libcco']
-CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libdep', 'reg', 'libreg']
-NOM_TABLE_REFGEO = 'v_passage'
-
-
+from config import Config
 
 # ----- Lancement de l'app ----- #
 app = Flask(__name__)
@@ -39,7 +24,6 @@ engine = create_engine(Config.SQLALCHEMY_DATABASE_URI, pool_recycle=3600)
 
 
 # ---------- Connexion Admin ------- #
-
 class User:
     def __init__(self, password):
         self.id = 1
@@ -106,7 +90,7 @@ def admin_menu():
             if mdp_adr_exp == mdp_adr_exp2 and mdp_adr_exp != "":
                 Config.MAIL_PASSWORD = mdp_adr_exp
                 fo = open('config.py', 'r')
-                #ligne2 = linecache.getline("config.py", 25)
+                # ligne2 = linecache.getline("config.py", 25)
                 lignes = fo.readlines()
                 for ligne in lignes:
                     if "MAIL_PASSWORD" in ligne:
@@ -138,7 +122,7 @@ def admin_menu():
             lines = fo.readlines()
             for line in lines:
                 if "MAIL_ADRESSES_DEST" in line:
-                         liste_mots = line.split()
+                    liste_mots = line.split()
 
             mot2 = liste_mots[2]
             print(mot2)
@@ -157,33 +141,27 @@ def admin_menu():
             return redirect(url_for('tableauAddresses'))
 
         if request.form.get("del_mail"):
-            mail_a_effacer =request.form.get('operation')
-            # print(mail_a_effacer)
-            # print(Config.MAIL_ADRESSES_DEST)
+            mail_a_effacer = request.form.get('operation')
             Config.MAIL_ADRESSES_DEST.remove(mail_a_effacer)
 
             fo = open('config.py', 'r')
+            lignes = fo.readlines()
+            count = 0
 
-            lines = fo.readlines()
-            for line in lines:
-                if "MAIL_ADRESSES_DEST" in line:
-                         liste_mots = line.split()
+            for ligne in lignes:
+                if "MAIL_ADRESSES_DEST" in ligne:
+                    ligne
+                    break
+                count += 1
+            line_temp = f"    MAIL_ADRESSES_DEST = {Config.MAIL_ADRESSES_DEST} # geomatique@agate-territoires.fr \n"
+            lignes[count] = line_temp
 
-            mot2 = liste_mots[2]
-            print(mot2)
-            list_temp_mail = "', '".join(str(x) for x in Config.MAIL_ADRESSES_DEST)
-            print(list_temp_mail)
-            list_temp_mail = str("['") + list_temp_mail + str("']")
-            # add_dest = str("[") + add_dest + str("]")
-            fo.close()
-
-            # modif = open('config.py', 'r+').read().replace(mot2, '')
-            # f1 = open('config.py', 'w')
-            # f1.write(modif)
-            # f1.close()
-            # flash('Le mail à été ajouté avec succès', 'success')
-
+            f1 = open('config.py', 'w')
+            f1.writelines(lignes)
+            f1.close()
             return redirect(url_for('tableauAddresses'))
+
+
 
         if request.form.get("logout"):
             session.pop('username', None)
@@ -191,8 +169,9 @@ def admin_menu():
 
     return redirect(url_for('index'))
 
-
     # Menu déroulant avec les addresses destinataires
+
+
 @app.route('/tableauAddresses')
 def tableauAddresses():
     html_output = ''
@@ -208,18 +187,17 @@ def tableauAddresses():
     html_output += f"<button type='submit' id='btn-adr_dest' class='btn btn-primary' name='del_mail' value='del_mail'>Effacer Mail</button>"
     html_output += f"\n"
 
-
     fo = open('templates/admin.html', 'r')
     lignes = fo.readlines()
     count = 0
 
     for ligne in lignes:
-        count +=1
+        count += 1
         if "tableauModifAddresse" in ligne:
             ligne
             break
 
-    lignes[count]=html_output
+    lignes[count] = html_output
 
     f1 = open('templates/admin.html', 'w')
     f1.writelines(lignes)
@@ -246,9 +224,9 @@ def connexion():
             return redirect(url_for('index'))
     return render_template('connexion.html')
 
-# -------------------
-# IMPORT D'UN FICHIER
-# -------------------
+
+# ----- Import ----- #
+
 @app.route('/import_operation', methods=['POST'])
 def get_operations():
     uploaded_file = request.files['file']
@@ -278,50 +256,8 @@ def get_operations():
         df_import = remove_empty_lines(df, empty_lines, empty_columns)
         save_file(df_import, os.path.join(app.config['UPLOAD_PATH'], filename), filename, separator)
 
-    # df_import.columns = remove_specialchar(df_import.columns.tolist())
-
     df_res = pd.DataFrame({}, columns=df_import.columns)
     return df_res.to_json()
-
-
-def has_empty_header(headers):
-    for header in headers:
-        if "Unnamed" not in header:
-            return False
-    return True
-
-
-def open_full_file(path, name, sep):
-    if name[-3:] == "csv":
-        return pd.read_csv(path, sep=sep)
-    elif name[-4:] == "xlsx":
-        return pd.read_excel(path, engine="openpyxl")
-    elif name[-3:] == "ods":
-        return pd.read_excel(path, engine="odf")
-
-
-def remove_empty_lines(df, empty_lines, empty_columns):
-    df_new = pd.DataFrame()
-    if empty_columns:
-        df_new = df.dropna(axis=1, how='all')
-        df_new = df_new.reset_index(drop=True)
-
-    if empty_lines:
-        df_new = df_new.dropna(axis=0, how='all')
-        new_header = df_new.iloc[0]
-        df_new = df_new[1:]
-        df_new.columns = remove_specialchar(new_header.tolist())
-
-    return df_new
-
-
-def save_file(df, path, name, sep):
-    if name[-3:] == "csv":
-        df.to_csv(path, sep=sep, index=False)
-    elif name[-4:] == "xlsx":
-        df.to_excel(path, engine="openpyxl", index=False)
-    elif name[-3:] == "ods":
-        df.to_excel(path, engine="odf", index=False)
 
 
 @app.route('/import', methods=['POST'])
@@ -381,33 +317,17 @@ def upload_file():
     return data_json
 
 
-def clean_codesINSEE(all_codes):
-    new_codes = []
-    for code in all_codes:
-        if len(code) > 5 and code[0] == "0":
-            c = code[0]
-            while c == "0":
-                code = code[1:]
-                c = code[0]
-        if len(code) > 5 and code[-1] == "0":
-            c = code[-1]
-            while c == "0":
-                code = code[:-1]
-                c = code[-1]
-        new_codes.append(code)
-    return new_codes
+# ----- Lien Ref Geo ----- #
 
-
-# LIEN ENTRE LES DONNEES IMPORTEES ET UN REFERENTIEL GEOGRAPHIQUE
 def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_max, tab_min):
     # Rename com -> COM_JOINTURE pour le mettre en index et joindre dessus
-    df_import.rename(columns={com: COM_JOINTURE}, inplace=True)
+    df_import.rename(columns={com: Config.COM_JOINTURE}, inplace=True)
 
     # Récupération v_passage
-    champs_jointure = list_to_str(CHAMPS_JOINTURE)
-    champs_jointure_dependant_annee = list_with_year_to_str(CHAMPS_JOINTURE_DEPENDANT_ANNEE, year_ref)
+    champs_jointure = list_to_str(Config.CHAMPS_JOINTURE)
+    champs_jointure_dependant_annee = list_with_year_to_str(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE, year_ref)
 
-    chaine = 'SELECT ' + COM_JOINTURE + ', ' + champs_jointure_dependant_annee + ', ' + champs_jointure + ' FROM ' + NOM_TABLE_REFGEO
+    chaine = 'SELECT ' + Config.COM_JOINTURE + ', ' + champs_jointure_dependant_annee + ', ' + champs_jointure + ' FROM ' + Config.NOM_TABLE_REFGEO
     conn = engine.connect()
 
     try:
@@ -420,25 +340,26 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     cols_jointure = jointure.columns.values.tolist()
     cols_dfImport = df_import.columns.values.tolist()
     for col in cols_jointure:
-        if col != COM_JOINTURE and col in cols_dfImport:
+        if col != Config.COM_JOINTURE and col in cols_dfImport:
             del df_import[str(col)]
 
     # Champs GroupBy
-    groupby = list_with_year_to_list_with_choosen_year(CHAMPS_JOINTURE_DEPENDANT_ANNEE, year_ref) + CHAMPS_JOINTURE
+    groupby = list_with_year_to_list_with_choosen_year(Config.CHAMPS_JOINTURE_DEPENDANT_ANNEE,
+                                                       year_ref) + Config.CHAMPS_JOINTURE
     comXX = get_com(groupby)
 
     ### Gestion des différentes opérations
 
     # Dataframe intermediaire contenant code INSEE et comXX.
     # Permet les jointures et groupby sans entrainer tous les autres champs
-    jointure_op = pd.DataFrame(jointure[[COM_JOINTURE, comXX]], columns=[COM_JOINTURE, comXX])
+    jointure_op = pd.DataFrame(jointure[[Config.COM_JOINTURE, comXX]], columns=[Config.COM_JOINTURE, comXX])
 
     # Somme
-
-    df_sum = pd.DataFrame(df_import[[COM_JOINTURE] + tab_sum], columns=[COM_JOINTURE] + tab_sum)
-    df_sum = jointure_op.set_index(COM_JOINTURE).join(df_sum.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    df_sum = pd.DataFrame(df_import[[Config.COM_JOINTURE] + tab_sum], columns=[Config.COM_JOINTURE] + tab_sum)
+    df_sum = jointure_op.set_index(Config.COM_JOINTURE).join(df_sum.set_index(Config.COM_JOINTURE), how='inner',
+                                                             on=Config.COM_JOINTURE)
     df_sum = df_sum.reset_index()
-    df_sum = df_sum.drop(columns=[COM_JOINTURE])
+    df_sum = df_sum.drop(columns=[Config.COM_JOINTURE])
     df_sum = df_sum.groupby(by=comXX, dropna=False, as_index=False).sum()
     try:
         df_sum = pd.DataFrame(df_sum[[comXX] + tab_sum], columns=[comXX] + tab_sum)
@@ -446,28 +367,31 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
         return json.dumps("err_jointure")
 
     # Max
-    df_max = pd.DataFrame(df_import[[COM_JOINTURE] + tab_max], columns=[COM_JOINTURE] + tab_max)
-    df_max = jointure_op.set_index(COM_JOINTURE).join(df_max.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    df_max = pd.DataFrame(df_import[[Config.COM_JOINTURE] + tab_max], columns=[Config.COM_JOINTURE] + tab_max)
+    df_max = jointure_op.set_index(Config.COM_JOINTURE).join(df_max.set_index(Config.COM_JOINTURE), how='inner',
+                                                             on=Config.COM_JOINTURE)
     df_max = df_max.reset_index()
-    df_max = df_max.drop(columns=[COM_JOINTURE])
+    df_max = df_max.drop(columns=[Config.COM_JOINTURE])
     df_max = df_max.groupby(by=comXX, dropna=False, as_index=False).max()
-    df_max = pd.DataFrame(df_max[[comXX]+tab_max], columns=[comXX]+tab_max)
+    df_max = pd.DataFrame(df_max[[comXX] + tab_max], columns=[comXX] + tab_max)
 
     # Min
-    df_min = pd.DataFrame(df_import[[COM_JOINTURE] + tab_min], columns=[COM_JOINTURE] + tab_min)
-    df_min = jointure_op.set_index(COM_JOINTURE).join(df_min.set_index(COM_JOINTURE), how='inner', on=COM_JOINTURE)
+    df_min = pd.DataFrame(df_import[[Config.COM_JOINTURE] + tab_min], columns=[Config.COM_JOINTURE] + tab_min)
+    df_min = jointure_op.set_index(Config.COM_JOINTURE).join(df_min.set_index(Config.COM_JOINTURE), how='inner',
+                                                             on=Config.COM_JOINTURE)
     df_min = df_min.reset_index()
-    df_min = df_min.drop(columns=[COM_JOINTURE])
+    df_min = df_min.drop(columns=[Config.COM_JOINTURE])
     df_min = df_min.groupby(by=comXX, dropna=False, as_index=False).min()
-    df_min = pd.DataFrame(df_min[[comXX]+tab_min], columns=[comXX]+tab_min)
+    df_min = pd.DataFrame(df_min[[comXX] + tab_min], columns=[comXX] + tab_min)
 
     # Fusion des différentes opérations
     df_op = pd.DataFrame
+
     # Sum & Max & Min
     if tab_sum and tab_max and tab_min:
         try:
             df_op = df_sum.set_index(comXX).join(df_max.set_index(comXX), how='inner',
-                                                            on=comXX)
+                                                 on=comXX)
             df_op = df_op.join(df_min.set_index(comXX), how='inner', on=comXX)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MAX_MIN")
@@ -477,7 +401,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     elif tab_sum and tab_max:
         try:
             df_op = df_sum.set_index(comXX).join(df_max.set_index(comXX), how='inner',
-                                                            on=comXX)
+                                                 on=comXX)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MAX")
         except KeyError:
@@ -485,7 +409,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     elif tab_sum and tab_min:
         try:
             df_op = df_sum.set_index(comXX).join(df_min.set_index(comXX), how='inner',
-                                                            on=comXX)
+                                                 on=comXX)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MIN")
         except KeyError:
@@ -493,7 +417,7 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     elif tab_max and tab_min:
         try:
             df_op = df_max.set_index(comXX).join(df_min.set_index(comXX), how='inner',
-                                                            on=comXX)
+                                                 on=comXX)
             df_op = df_op.reset_index()
             print("DF_OP_SUM_MIN")
         except KeyError:
@@ -508,11 +432,10 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     ### Jointure des refs
 
     # On supprime COM_JOINTURE du df jointure
-    jointure = jointure.drop(columns=[COM_JOINTURE])
+    jointure = jointure.drop(columns=[Config.COM_JOINTURE])
 
     # Jointure sur com courant de df_op sur jointure
-    df_res = jointure.set_index(comXX).join(df_op.set_index(comXX), how='inner',
-                                                       on=comXX)
+    df_res = jointure.set_index(comXX).join(df_op.set_index(comXX), how='inner', on=comXX)
 
     # On enlève le com courant de l'index (il repasse en colonne)
     df_res = df_res.reset_index()
@@ -534,16 +457,8 @@ def lien_ref_geo(df_import, com, year_ref, commentaire, tab_ops, tab_sum, tab_ma
     return df_res.to_json()
 
 
-def remove_specialchar(tab):
-    clean_tab = []
-    for title in tab:
-        title = unidecode(title.lower()).replace(" ", "_")
-        clean_tab.append(title)
+# ----- Mise en Base ----- #
 
-    return clean_tab
-
-
-# AJOUT D'UNE NOUVELLE TABLE DANS LA BASE DE DONNEES
 def mise_en_base(table_name, dataframe):
     # Setup Connexion + definition du curseur
     conn = engine.connect()
@@ -556,7 +471,7 @@ def mise_en_base(table_name, dataframe):
     except ValueError:
         return "err_name"
     except Exception as ex:
-        print(ex)  # TODO : à remplacer par un feedback au front
+        print(ex)
     else:
         print('La mise en base a été réalisée avec succes ')
     finally:
@@ -564,7 +479,151 @@ def mise_en_base(table_name, dataframe):
     return 0
 
 
-# TODO : df_to_sql amélioration
+# ----- Export ----- #
+
+@app.route('/export', methods=['POST'])
+def download_file():
+    content = request.json  # Récupération du json envoyé par l'affichage
+    db_name = content[-1][0]
+    content.remove(content[-1])
+
+    # Séparation des colonnes et du contenu du json
+    try:
+        columns = content[0]
+        content.remove(content[0])
+
+        # Création d'un dataframe à partir du contenu et des colonnes
+        df_export = pd.DataFrame.from_records(content)
+        df_export.columns = columns
+    except IndexError:
+        df_export = pd.DataFrame.from_records(content)
+
+    # Mise en base du fichier
+    result = mise_en_base(db_name, df_export)
+
+    if result == "err_name":
+        return result
+
+    # Vide le dossier local de fichiers
+    cleanTempDirectory()
+
+    file_name = db_name + ".csv"
+
+    # Conversion du dataframe en CSV et renvoie à l'affichage pour le téléchargement
+    path = os.path.join(os.getcwd(), "temp")
+    file_name_path = os.path.join(path, file_name)
+    df_export.to_csv(file_name_path, sep=";", index=False)
+    send_email(file_name_path)
+
+    return send_file(file_name_path,
+                     mimetype='text/csv',
+                     attachment_filename=file_name,
+                     as_attachment=True)
+
+
+# ----- Envoie de mail ----- #
+
+def send_email(file_name):
+    file_name_affichage = get_name_mail(file_name)
+    msg = Message('Outil Agate - Traitement : ' + file_name_affichage, recipients=Config.MAIL_ADRESSES_DEST)
+    msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
+    with app.open_resource(file_name) as fp:
+        msg.attach(file_name_affichage, "text/csv", fp.read())
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return render_template('index.html')
+
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
+# ----- Fonctions annexes ----- #
+
+## Import
+
+# Charge en fichier dans un Dataframe sans gestion de types
+def open_full_file(path, name, sep):
+    if name[-3:] == "csv":
+        return pd.read_csv(path, sep=sep)
+    elif name[-4:] == "xlsx":
+        return pd.read_excel(path, engine="openpyxl")
+    elif name[-3:] == "ods":
+        return pd.read_excel(path, engine="odf")
+
+
+# Sauvegarde le dataframe sous forme de fichier
+def save_file(df, path, name, sep):
+    if name[-3:] == "csv":
+        df.to_csv(path, sep=sep, index=False)
+    elif name[-4:] == "xlsx":
+        df.to_excel(path, engine="openpyxl", index=False)
+    elif name[-3:] == "ods":
+        df.to_excel(path, engine="odf", index=False)
+
+
+# Verifie que le fichier ait une origine en A0
+def has_empty_header(headers):
+    for header in headers:
+        if "Unnamed" not in header:
+            return False
+    return True
+
+
+# Retire toute colonne ou ligne vide (remet l origine des donnees en A0)
+def remove_empty_lines(df, empty_lines, empty_columns):
+    df_new = pd.DataFrame()
+    if empty_columns:
+        df_new = df.dropna(axis=1, how='all')
+        df_new = df_new.reset_index(drop=True)
+
+    if empty_lines:
+        df_new = df_new.dropna(axis=0, how='all')
+        new_header = df_new.iloc[0]
+        df_new = df_new[1:]
+        df_new.columns = remove_specialchar(new_header.tolist())
+
+    return df_new
+
+
+# Formate le nom des colonnes
+def remove_specialchar(tab):
+    clean_tab = []
+    for title in tab:
+        title = unidecode(title.lower()).replace(" ", "_")
+        clean_tab.append(title)
+
+    return clean_tab
+
+
+# Formate les codes INSEE sur 5 caractères si ils sont
+def clean_codesINSEE(all_codes):
+    new_codes = []
+    for code in all_codes:
+        if len(code) > 5 and code[0] == "0":
+            c = code[0]
+            while c == "0":
+                code = code[1:]
+                c = code[0]
+        if len(code) > 5 and code[-1] == "0":
+            c = code[-1]
+            while c == "0":
+                code = code[:-1]
+                c = code[-1]
+        new_codes.append(code)
+    return new_codes
+
+
+# Recupere le d'un fichier à partir de son chemin
+def get_name(name):
+    for ind_l in reversed(range(len(name) - 1)):
+        if name[ind_l] == '\\':
+            return name[ind_l + 1:len(name)]
+
+
+## Lien Ref Geo
+
 # Fonction qui retourne le tableau de types postgres associé au tableau de type dataframe entré
 def df_to_sql(dfparam):
     res = {}
@@ -576,6 +635,7 @@ def df_to_sql(dfparam):
     return res
 
 
+# Retourne le com
 def get_com(liste):
     return liste[0]
 
@@ -610,48 +670,24 @@ def list_with_year_to_list_with_choosen_year(liste, year):
     return res
 
 
-# -------------------
-# EXPORTER UN FICHIER
-# -------------------
-@app.route('/export', methods=['POST'])
-def download_file():
-    content = request.json  # Récupération du json envoyé par l'affichage
-    db_name = content[-1][0]
-    content.remove(content[-1])
+## Mail
 
-    # Séparation des colonnes et du contenu du json
-    try:
-        columns = content[0]
-        content.remove(content[0])
+# Recupere le nom d'un fichier à partir de son chemin pour le mail
+def get_name_mail(name):
+    res = None
+    for ind_l in reversed(range(len(name) - 1)):
+        if name[ind_l] == '\\':
+            res = name[ind_l + 1:len(name)]
+            break
 
-        # Création d'un dataframe à partir du contenu et des colonnes
-        df_export = pd.DataFrame.from_records(content)
-        df_export.columns = columns
-    except IndexError:
-        df_export = pd.DataFrame.from_records(content)
-
-    result = mise_en_base(db_name, df_export)
-
-    if result == "err_name":
-        return result
-
-    # Vide le dossier local de fichiers
-    cleanTempDirectory()
-
-    file_name = db_name + ".csv"
-
-    # Conversion du dataframe en CSV et renvoie à l'affichage pour le téléchargement
-    path = os.path.join(os.getcwd(), "temp")
-    file_name_path = os.path.join(path, file_name)
-    df_export.to_csv(file_name_path, sep=";", index=False)
-    # send_email(file_name_path)
-
-    return send_file(file_name_path,
-                     mimetype='text/csv',
-                     attachment_filename=file_name,
-                     as_attachment=True)
+    if not res:
+        for ind_l in reversed(range(len(name) - 1)):
+            if name[ind_l] == '/':
+                return name[ind_l + 1:len(name)]
+    return res
 
 
+## Fichier temporaires
 # Vide le dossier de fichier temporaires
 def cleanTempDirectory():
     temp_path = os.path.join(os.getcwd(), "temp")  # récupération du chemin du dossier temp
@@ -664,47 +700,6 @@ def cleanTempDirectory():
                 os.remove(filepath)  # suppression du fichier
             except PermissionError:
                 pass
-
-
-# ---------------------------
-# ENVOI AUTOMATIQUE D'UN MAIL
-# ---------------------------
-
-def send_email(file_name):
-    file_name_affichage = get_name_mail(file_name)
-    msg = Message('Outil Agate - Traitement : ' + file_name_affichage, recipients=Config.MAIL_ADRESSES_DEST)
-    msg.body = "Un nouveau traitement a été effectué !\nCi-joint le fichier exporté."
-    with app.open_resource(file_name) as fp:
-        msg.attach(file_name_affichage, "text/csv", fp.read())
-    thr = Thread(target=send_async_email, args=[app, msg])
-    thr.start()
-    return render_template('index.html')
-
-
-def send_async_email(app, msg):
-    with app.app_context():
-        mail.send(msg)
-
-
-# Recupere le d'un fichier à partir de son chemin
-def get_name(name):
-    for ind_l in reversed(range(len(name) - 1)):
-        if name[ind_l] == '\\':
-            return name[ind_l + 1:len(name)]
-
-
-def get_name_mail(name):
-    res = None
-    for ind_l in reversed(range(len(name) - 1)):
-        if name[ind_l] == '\\':
-            res =  name[ind_l + 1:len(name)]
-            break
-
-    if not res :
-        for ind_l in reversed(range(len(name) - 1)):
-            if name[ind_l] == '/':
-                return name[ind_l + 1:len(name)]
-    return res
 
 # serveur
 # if __name__ == "__main__":

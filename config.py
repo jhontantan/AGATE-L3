@@ -1,5 +1,4 @@
 class Config:
-
     # ----- Database ----- #
     # Database
     DB_HOST = "127.0.0.1"
@@ -15,22 +14,28 @@ class Config:
     UPLOAD_EXTENSIONS = ['.csv', '.xlsx', 'ods']
     UPLOAD_PATH = 'temp'
 
+    # ----- Jointure ----- #
+    COM_JOINTURE = 'com14'
+    CHAMPS_JOINTURE_DEPENDANT_ANNEE = ['com', 'libcom', 'cco', 'libcco']
+    CHAMPS_JOINTURE = ['id_deleg', 'deleg', 'tcg18', 'libtcg18', 'alp', 'dep', 'libdep', 'reg', 'libreg']
+    NOM_TABLE_REFGEO = 'v_passage'
+
     # ----- Mail ----- #
     MAIL_SERVER = 'smtp.office365.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
 
-    MAIL_USERNAME = 'adressedetest73@outlook.fr' # 'traitement-geomatique@agate-territoires.fr'
-    MAIL_PASSWORD = 'motdepasse73' # 'Won06597'
+    MAIL_USERNAME = 'adressedetest73@outlook.fr'  # 'traitement-geomatique@agate-territoires.fr'
+    MAIL_PASSWORD = 'motdepasse73'  # 'Won06597'
 
     # Options pour le debug
     MAIL_DEBUG = True
-    # MAIL_SUPPRESS_SEND = False
 
-    MAIL_DEFAULT_SENDER = ('Outil Agate', 'adressedetest73@outlook.fr') # ('Outil Agate', 'traitement-geomatique@agate-territoires.fr')
+    MAIL_DEFAULT_SENDER = (
+    'Outil Agate', 'adressedetest73@outlook.fr')  # ('Outil Agate', 'traitement-geomatique@agate-territoires.fr')
     MAIL_MAX_EMAILS = None
     MAIL_ASCII_ATTACHMENTS = True
 
-    MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr','ouibonsoir@gmail.com']  # geomatique@agate-territoires.fr
-    ADMIN_PASSWORD = 'e10adc3949ba59abbe56e057f20f883e' #123456
+    MAIL_ADRESSES_DEST = ['adressedetest73@outlook.fr'] # geomatique@agate-territoires.fr 
+    ADMIN_PASSWORD = 'e10adc3949ba59abbe56e057f20f883e'  # 123456
